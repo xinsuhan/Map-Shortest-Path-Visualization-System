@@ -15,6 +15,8 @@ int main(void) {
     assert(storage_load_map(TEST_DATA_DIR "/map.txt", &graph) == MSP_OK);
     assert(graph.node_count == 3);
     assert(graph.edge_count == 2);
+    assert(storage_load_map(TEST_DATA_DIR "/broken_map.txt", &graph) == MSP_ERROR_FORMAT);
+    assert(storage_load_map(TEST_DATA_DIR "/missing_map.txt", &graph) == MSP_ERROR_IO);
     puts("test_storage passed");
     return 0;
 }

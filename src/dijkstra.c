@@ -49,6 +49,9 @@ int dijkstra_find_path(const Graph *graph, int start_id, int goal_id, PathResult
     if (start_index < 0 || goal_index < 0) {
         return MSP_ERROR_NOT_FOUND;
     }
+    if (start_index == goal_index) {
+        return MSP_ERROR_INVALID_ARGUMENT;
+    }
 
     for (i = 0; i < graph->node_count; ++i) {
         distance[i] = MSP_INFINITY;

@@ -87,6 +87,9 @@ int astar_find_path(const Graph *graph, int start_id, int goal_id, PathResult *r
     if (start_index < 0 || goal_index < 0) {
         return MSP_ERROR_NOT_FOUND;
     }
+    if (start_index == goal_index) {
+        return MSP_ERROR_INVALID_ARGUMENT;
+    }
     scale = heuristic_scale(graph);
 
     for (i = 0; i < graph->node_count; ++i) {

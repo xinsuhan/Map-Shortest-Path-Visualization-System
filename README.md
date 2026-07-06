@@ -92,6 +92,7 @@ f(n) = g(n) + h(n)
 Map-Shortest-Path-Visualization-System/
 │
 ├── CMakeLists.txt            # CMake 构建配置
+├── LICENSE                   # MIT 开源许可证
 ├── include/                  # 公共接口与数据模型
 │   ├── graph.h
 │   ├── dijkstra.h
@@ -174,14 +175,14 @@ build\Debug\map_shortest_path.exe
 
 系统中可以使用不同颜色表示不同状态：
 
-| 类型 | 含义 |
-|---|---|
-| 普通节点 | 尚未访问的节点 |
-| 起点 | 路径搜索的开始位置 |
-| 终点 | 路径搜索的目标位置 |
+| 类型    | 含义            |
+| ----- | ------------- |
+| 普通节点  | 尚未访问的节点       |
+| 起点    | 路径搜索的开始位置     |
+| 终点    | 路径搜索的目标位置     |
 | 已访问节点 | 算法搜索过程中访问过的节点 |
-| 当前节点 | 当前正在扩展的节点 |
-| 最短路径 | 最终计算得到的最优路径 |
+| 当前节点  | 当前正在扩展的节点     |
+| 最短路径  | 最终计算得到的最优路径   |
 
 ---
 
@@ -206,13 +207,13 @@ Total Distance: 12
 
 ## Dijkstra 与 A* 对比
 
-| 对比项 | Dijkstra | A* |
-|---|---|---|
-| 是否使用启发函数 | 否 | 是 |
-| 是否保证最短路径 | 是 | 是，前提是启发函数合理 |
-| 搜索范围 | 通常较大 | 通常较小 |
-| 适用场景 | 普通加权图 | 地图导航、游戏寻路 |
-| 核心依据 | 当前最短距离 | 实际代价 + 估计代价 |
+| 对比项      | Dijkstra | A*          |
+| -------- | -------- | ----------- |
+| 是否使用启发函数 | 否        | 是           |
+| 是否保证最短路径 | 是        | 是，前提是启发函数合理 |
+| 搜索范围     | 通常较大     | 通常较小        |
+| 适用场景     | 普通加权图    | 地图导航、游戏寻路   |
+| 核心依据     | 当前最短距离   | 实际代价 + 估计代价 |
 
 ---
 
@@ -253,11 +254,11 @@ Total Distance: 12
 
 ## 作者
 
-| 成员 | 分工 |
-|---|---|
-| 仵怡飞 | 代码开发与测试 |
-| 李欣雨 | 项目设计与算法 |
-| 李悦涵 | 项目文档 |
+| 成员  | 分工        |
+| --- | --------- |
+| 仵怡飞 | 代码开发与测试   |
+| 李欣雨 | 项目设计与算法   |
+| 李悦涵 | 项目文档      |
 | 廖若男 | PPT 与答辩材料 |
 
 GitHub: [@xinsuhan](https://github.com/xinsuhan)
@@ -266,12 +267,12 @@ GitHub: [@xinsuhan](https://github.com/xinsuhan)
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for the full text.
 
 ```text
 MIT License
 
-Copyright (c) 2026 su xinxin
+Copyright (c) 2026 xinsuhan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files, to deal in the Software

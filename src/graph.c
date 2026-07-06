@@ -1,3 +1,4 @@
+/* AI-assisted modification: added duplicate-edge validation. */
 #include "graph.h"
 
 #include <string.h>
@@ -60,14 +61,26 @@ int graph_add_edge(Graph *graph, int from_id, int to_id, double weight, int bidi
     if (graph == NULL || weight < 0.0) {
         return MSP_ERROR_INVALID_ARGUMENT;
     }
-    if (graph->edge_count >= MSP_MAX_EDGES) {
-        return MSP_ERROR_CAPACITY;
-    }
-
     from_index = graph_find_node_index(graph, from_id);
     to_index = graph_find_node_index(graph, to_id);
     if (from_index < 0 || to_index < 0) {
         return MSP_ERROR_NOT_FOUND;
+    }
+    if ((from_index != to_index && graph->adjacency[from_index][to_index] < MSP_INFINITY) ||
+        (bidirectional && from_index != to_index &&
+         graph->adjacency[to_index][from_index] < MSP_INFINITY)) {
+        return MSP_ERROR_DUPLICATE;
+    }
+    if (from_index == to_index) {
+        int i;
+        for (i = 0; i < graph->edge_count; ++i) {
+            if (graph->edges[i].from_id == from_id && graph->edges[i].to_id == to_id) {
+                return MSP_ERROR_DUPLICATE;
+            }
+        }
+    }
+    if (graph->edge_count >= MSP_MAX_EDGES) {
+        return MSP_ERROR_CAPACITY;
     }
 
     graph->adjacency[from_index][to_index] = weight;

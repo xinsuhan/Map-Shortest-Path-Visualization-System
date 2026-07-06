@@ -16,6 +16,9 @@ int main(void) {
     assert(graph_add_edge(&graph, 1, 2, 3.5, 1) == MSP_OK);
     assert(graph_get_weight(&graph, 0, 1) == 3.5);
     assert(graph_get_weight(&graph, 1, 0) == 3.5);
+    assert(graph_add_edge(&graph, 1, 2, 4.0, 0) == MSP_ERROR_DUPLICATE);
+    assert(graph_add_edge(&graph, 2, 1, 4.0, 1) == MSP_ERROR_DUPLICATE);
+    assert(graph.edge_count == 1);
     assert(strcmp(graph_get_node(&graph, 2)->name, "B") == 0);
     puts("test_graph passed");
     return 0;

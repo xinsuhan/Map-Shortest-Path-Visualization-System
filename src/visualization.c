@@ -14,8 +14,8 @@
 #include <time.h>
 #endif
 
-#define CANVAS_WIDTH 76
-#define CANVAS_HEIGHT 22
+#define CANVAS_WIDTH 78
+#define CANVAS_HEIGHT 26
 #define MAP_X_SCALE 5
 #define MAP_Y_SCALE 2
 #define MAP_X_OFFSET 2
@@ -41,7 +41,7 @@ static int canvas_x(double logical_x) {
 }
 
 static int canvas_y(double logical_y) {
-    return MAP_Y_OFFSET + (int)((logical_y - 3.0) * MAP_Y_SCALE + 0.5);
+    return MAP_Y_OFFSET + (int)((12.0 - logical_y) * MAP_Y_SCALE + 0.5);
 }
 
 static int in_canvas(int x, int y) {

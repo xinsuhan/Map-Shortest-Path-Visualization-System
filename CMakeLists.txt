@@ -10,6 +10,7 @@ add_library(shortest_path_core
     src/dijkstra.c
     src/astar.c
     src/storage.c
+    src/path_result.c
     src/input.c
     src/visualization.c
 )
@@ -28,7 +29,7 @@ target_link_libraries(map_shortest_path PRIVATE shortest_path_core)
 
 include(CTest)
 if(BUILD_TESTING)
-    foreach(test_name graph dijkstra astar storage scu_map input edge_cases)
+    foreach(test_name graph dijkstra astar storage scu_map input edge_cases path_result)
         add_executable(test_${test_name} tests/test_${test_name}.c)
         target_link_libraries(test_${test_name} PRIVATE shortest_path_core)
         add_test(NAME ${test_name} COMMAND test_${test_name})

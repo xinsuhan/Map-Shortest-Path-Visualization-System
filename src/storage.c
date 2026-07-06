@@ -1,3 +1,4 @@
+/* AI-assisted modification: added map persistence support. */
 #include "storage.h"
 
 #include "graph.h"
@@ -151,6 +152,47 @@ int storage_load_map(const char *file_path, Graph *graph) {
 
     fclose(file);
     return MSP_OK;
+}
+
+int storage_save_map(const char *file_path, const Graph *graph) {
+    FILE *file;
+    int i;
+
+    if (file_path == NULL || graph == NULL) {
+        return MSP_ERROR_INVALID_ARGUMENT;
+    }
+    file = fopen(file_path, "w");
+    if (file == NULL) {
+        return MSP_ERROR_IO;
+    }
+
+    if (fprintf(file, "NODES %d\n", graph->node_count) < 0) {
+        fclose(file);
+        return MSP_ERROR_IO;
+    }
+    for (i = 0; i < graph->node_count; ++i) {
+        const Node *node = &graph->nodes[i];
+        if (fprintf(file, "%d %s %.17g %.17g\n", node->id, node->name,
+                    node->x, node->y) < 0) {
+            fclose(file);
+            return MSP_ERROR_IO;
+        }
+    }
+
+    if (fprintf(file, "EDGES %d\n", graph->edge_count) < 0) {
+        fclose(file);
+        return MSP_ERROR_IO;
+    }
+    for (i = 0; i < graph->edge_count; ++i) {
+        const Edge *edge = &graph->edges[i];
+        if (fprintf(file, "%d %d %.17g\n", edge->from_id, edge->to_id,
+                    edge->weight) < 0) {
+            fclose(file);
+            return MSP_ERROR_IO;
+        }
+    }
+
+    return fclose(file) == 0 ? MSP_OK : MSP_ERROR_IO;
 }
 
 int storage_save_path(const char *file_path, const Graph *graph, const PathResult *result) {

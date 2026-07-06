@@ -4,7 +4,7 @@
 
 **Map Shortest Path Visualization System** 是一个地图最短路径可视化系统，主要用于展示图结构中最短路径算法的运行过程。
 
-本项目支持 **Dijkstra 算法** 和 **A* 算法**。用户可以在图形界面中选择起点和终点，系统会自动计算两点之间的最短路径，并通过可视化方式展示搜索过程和最终路径结果。
+本项目支持 **Dijkstra 算法** 和 **A* 算法**。当前版本提供终端菜单，可选择起点、终点和算法，并显示节点访问顺序、最终路径及总距离；图形界面与动画展示将在此基础上继续开发。
 
 该项目适合作为数据结构、算法设计、图论、人工智能搜索算法或课程设计项目。
 
@@ -65,15 +65,15 @@ f(n) = g(n) + h(n)
 - `h(n)` 表示从当前节点到终点的估计代价
 - `f(n)` 表示当前节点的综合评估代价
 
-相比 Dijkstra 算法，A* 算法在地图场景中通常搜索范围更小，效率更高。
+相比 Dijkstra 算法，A* 算法在地图场景中通常搜索范围更小，效率更高。程序会根据道路权值与坐标距离自动缩放启发函数，避免地图逻辑坐标和演示权值比例不一致时高估剩余代价。
 
 ---
 
 ## 技术栈
 
-> 可根据实际代码情况修改。
-
-- 编程语言：C++ / Python / JavaScript
+- 编程语言：C11
+- 构建工具：CMake 3.16+
+- 测试工具：CTest、C 标准库 `assert`
 - 核心算法：Dijkstra Algorithm、A* Search Algorithm
 - 核心数据结构：
   - Graph 图
@@ -81,7 +81,9 @@ f(n) = g(n) + h(n)
   - Edge 边
   - Priority Queue 优先队列
   - Adjacency List 邻接表
-- 图形展示：可视化界面 / 图形窗口 / 地图展示模块
+- 数据存储：`map.txt`（默认）与 CSV
+- 当前展示：终端访问顺序与路径展示
+- 规划展示：图形窗口、颜色状态和搜索动画
 
 ---
 
@@ -90,27 +92,23 @@ f(n) = g(n) + h(n)
 ```text
 Map-Shortest-Path-Visualization-System/
 │
-├── src/                     # 源代码目录
-│   ├── main.cpp             # 程序入口
-│   ├── graph.cpp            # 图结构实现
-│   ├── dijkstra.cpp         # Dijkstra 算法实现
-│   ├── astar.cpp            # A* 算法实现
-│   └── visualization.cpp    # 可视化展示模块
-│
-├── include/                 # 头文件目录
+├── CMakeLists.txt            # CMake 构建配置
+├── include/                  # 公共接口与数据模型
 │   ├── graph.h
 │   ├── dijkstra.h
 │   ├── astar.h
+│   ├── storage.h
+│   ├── input.h
 │   └── visualization.h
 │
-├── data/                    # 地图数据或测试数据
-├── assets/                  # 图片、图标等资源文件
-├── screenshots/             # 项目运行截图
-├── README.md                # 项目说明文档
-└── LICENSE                  # 开源协议
+├── src/                      # C 源代码
+├── data/                     # 川大江安校区简化地图数据
+├── tests/                    # 单元测试与测试数据
+├── docs/                     # 项目全过程文档
+├── assets/                   # 图表与运行截图
+├── demo/                     # 演示数据和演示脚本
+└── README.md                 # 项目说明文档
 ```
-
-如果实际项目结构不同，可以根据真实文件名修改这一部分。
 
 ---
 
@@ -125,33 +123,37 @@ cd Map-Shortest-Path-Visualization-System
 
 ### 2. 编译项目
 
-如果项目使用 C++，可以使用：
-
 ```bash
-g++ src/*.cpp -o shortest_path
+cmake -S . -B build
+cmake --build build
 ```
 
-如果使用 CMake，可以使用：
+### 3. 运行测试
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+ctest --test-dir build --output-on-failure
 ```
 
-### 3. 运行程序
+### 4. 运行程序
 
 Linux / macOS：
 
 ```bash
-./shortest_path
+./build/map_shortest_path
 ```
 
 Windows：
 
 ```bash
-shortest_path.exe
+build\Debug\map_shortest_path.exe
+```
+
+对于单配置生成器，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
+
+程序默认加载 `data/map.txt`，其中包含四川大学江安校区西区的 16 个简化地标和 32 条双向道路。也可以指定其他地图文件：
+
+```bash
+./build/map_shortest_path path/to/map.txt
 ```
 
 ---
@@ -252,7 +254,12 @@ Total Distance: 12
 
 ## 作者
 
-**su xinxin**
+| 成员 | 分工 |
+| --- | --- |
+| 仵怡飞 | 代码开发与测试 |
+| 李欣雨 | 项目设计与算法 |
+| 李悦涵 | 项目文档 |
+| 廖若男 | PPT 与答辩材料 |
 
 GitHub: [@xinsuhan](https://github.com/xinsuhan)
 

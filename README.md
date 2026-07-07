@@ -121,34 +121,53 @@ git clone https://github.com/xinsuhan/Map-Shortest-Path-Visualization-System.git
 cd Map-Shortest-Path-Visualization-System
 ```
 
-### 2. 编译项目
+### 2. Windows + VS Code 环境准备
+
+VS Code 只是代码编辑器，本身不包含 C/C++ 编译器。Windows 用户推荐安装 **Visual Studio Build Tools 2022**，并在 Visual Studio Installer 中选择 **Desktop development with C++（使用 C++ 的桌面开发）**，确认包含以下组件：
+
+- MSVC v143
+- Windows 10 SDK 或 Windows 11 SDK
+- C++ CMake tools for Windows
+
+VS Code 中建议同时安装 Microsoft 提供的 **C/C++** 和 **CMake Tools** 扩展。安装完成后，请重新打开 VS Code 和终端。
+
+可以在 **Developer PowerShell for VS 2022** 中输入以下命令检查编译器：
+
+```powershell
+cl
+```
+
+如果提示 `cl` 不是内部或外部命令，说明 MSVC 尚未正确安装，或者安装后还没有重新打开 VS Code/终端。也可以直接使用 Developer PowerShell for VS 2022 打开项目，以加载 MSVC 环境。
+
+### 3. Windows 编译与运行
+
+如果之前使用过其他 CMake 生成器，需要先删除旧的 `build` 目录，再使用 Visual Studio 2022 重新配置：
+
+```powershell
+Remove-Item -Recurse -Force build
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Debug
+.\build\Debug\map_shortest_path.exe
+```
+
+如果 `build` 文件夹不存在，第一条 `Remove-Item` 命令报错可以忽略。旧构建目录必须清理，否则 CMake 可能继续使用之前缓存的 `NMake Makefiles` 等生成器。
+
+运行测试：
+
+```powershell
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+### 4. Linux / macOS 编译与运行
 
 ```bash
 cmake -S . -B build
 cmake --build build
-```
-
-### 3. 运行测试
-
-```bash
 ctest --test-dir build --output-on-failure
-```
-
-### 4. 运行程序
-
-Linux / macOS：
-
-```bash
 ./build/map_shortest_path
 ```
 
-Windows：
-
-```powershell
-build\Debug\map_shortest_path.exe
-```
-
-对于单配置生成器，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
+使用 Ninja、MinGW Makefiles 等单配置生成器时，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
 
 程序默认加载 `data/map.txt`，其中包含四川大学江安校区西区的 16 个简化地标和 32 条双向道路。也可以指定其他地图文件：
 

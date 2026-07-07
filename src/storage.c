@@ -6,6 +6,34 @@
 #include <stdio.h>
 #include <string.h>
 
+static void set_node_defaults(Node *node) {
+    node->type = NODE_LANDMARK;
+    node->width = 1.0f;
+    node->depth = 0.8f;
+    node->height = 0.5f;
+}
+
+const char *storage_node_type_name(NodeType type) {
+    switch (type) {
+        case NODE_JUNCTION: return "JUNCTION";
+        case NODE_LAKE: return "LAKE";
+        case NODE_SQUARE: return "SQUARE";
+        case NODE_GATE: return "GATE";
+        case NODE_LANDMARK:
+        default: return "LANDMARK";
+    }
+}
+
+static int parse_node_type(const char *text, NodeType *type) {
+    if (strcmp(text, "LANDMARK") == 0) *type = NODE_LANDMARK;
+    else if (strcmp(text, "JUNCTION") == 0) *type = NODE_JUNCTION;
+    else if (strcmp(text, "LAKE") == 0) *type = NODE_LAKE;
+    else if (strcmp(text, "SQUARE") == 0) *type = NODE_SQUARE;
+    else if (strcmp(text, "GATE") == 0) *type = NODE_GATE;
+    else return 0;
+    return 1;
+}
+
 static void trim_newline(char *text) {
     size_t length = strlen(text);
     while (length > 0 && (text[length - 1] == '\n' || text[length - 1] == '\r')) {
@@ -28,17 +56,27 @@ int storage_load_nodes(const char *file_path, Graph *graph) {
 
     while (fgets(line, sizeof(line), file) != NULL) {
         Node node;
+        char type_name[16];
         int parsed;
         line_number++;
         trim_newline(line);
         if (line[0] == '\0' || line[0] == '#') {
             continue;
         }
-        parsed = sscanf(line, "%d,%63[^,],%lf,%lf", &node.id, node.name, &node.x, &node.y);
-        if (parsed != 4) {
+        set_node_defaults(&node);
+        parsed = sscanf(line, "%d,%63[^,],%lf,%lf,%15[^,],%f,%f,%f", &node.id,
+                        node.name, &node.x, &node.y, type_name, &node.width,
+                        &node.depth, &node.height);
+        if (parsed != 4 && parsed != 8) {
             if (line_number == 1) {
                 continue;
             }
+            fclose(file);
+            return MSP_ERROR_FORMAT;
+        }
+        if (parsed == 8 && (!parse_node_type(type_name, &node.type) ||
+                            node.width <= 0.0f || node.depth <= 0.0f ||
+                            node.height <= 0.0f)) {
             fclose(file);
             return MSP_ERROR_FORMAT;
         }
@@ -106,6 +144,7 @@ int storage_load_graph(const char *nodes_path, const char *edges_path, Graph *gr
 
 int storage_load_map(const char *file_path, Graph *graph) {
     FILE *file;
+    char line[MSP_LINE_LENGTH];
     char section[16];
     int node_count;
     int edge_count;
@@ -125,9 +164,23 @@ int storage_load_map(const char *file_path, Graph *graph) {
         fclose(file);
         return MSP_ERROR_FORMAT;
     }
+    fgets(line, sizeof(line), file);
     for (i = 0; i < node_count; ++i) {
         Node node;
-        if (fscanf(file, "%d %63s %lf %lf", &node.id, node.name, &node.x, &node.y) != 4 ||
+        char type_name[16];
+        int parsed;
+        if (fgets(line, sizeof(line), file) == NULL) {
+            fclose(file);
+            return MSP_ERROR_FORMAT;
+        }
+        set_node_defaults(&node);
+        parsed = sscanf(line, "%d %63s %lf %lf %15s %f %f %f", &node.id,
+                        node.name, &node.x, &node.y, type_name, &node.width,
+                        &node.depth, &node.height);
+        if ((parsed != 4 && parsed != 8) ||
+            (parsed == 8 && (!parse_node_type(type_name, &node.type) ||
+                             node.width <= 0.0f || node.depth <= 0.0f ||
+                             node.height <= 0.0f)) ||
             graph_add_node(graph, node) != MSP_OK) {
             fclose(file);
             return MSP_ERROR_FORMAT;
@@ -172,8 +225,17 @@ int storage_save_map(const char *file_path, const Graph *graph) {
     }
     for (i = 0; i < graph->node_count; ++i) {
         const Node *node = &graph->nodes[i];
-        if (fprintf(file, "%d %s %.17g %.17g\n", node->id, node->name,
-                    node->x, node->y) < 0) {
+        int written;
+        if (node->width > 0.0f && node->depth > 0.0f && node->height > 0.0f) {
+            written = fprintf(file, "%d %s %.17g %.17g %s %.6g %.6g %.6g\n",
+                              node->id, node->name, node->x, node->y,
+                              storage_node_type_name(node->type), node->width,
+                              node->depth, node->height);
+        } else {
+            written = fprintf(file, "%d %s %.17g %.17g\n", node->id,
+                              node->name, node->x, node->y);
+        }
+        if (written < 0) {
             fclose(file);
             return MSP_ERROR_IO;
         }

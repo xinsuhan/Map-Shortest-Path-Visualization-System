@@ -1,6 +1,7 @@
 #include "visualization.h"
 
 #include "graph.h"
+#include "storage.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -165,9 +166,16 @@ static void canvas_draw_edge(ConsoleCanvas *canvas, const Graph *graph, const Ed
 static void canvas_draw_node(ConsoleCanvas *canvas, const Node *node) {
     int x = canvas_x(node->x);
     int y = canvas_y(node->y);
-    char label[5];
+    char label[16];
     int i;
 
+    if (node->type == NODE_JUNCTION) {
+        if (in_canvas(x, y)) {
+            canvas->cells[y][x] = '+';
+            canvas->node_ids[y][x] = node->id;
+        }
+        return;
+    }
     snprintf(label, sizeof(label), "[%02d]", node->id);
     for (i = 0; label[i] != '\0' && in_canvas(x + i - 1, y); ++i) {
         canvas->cells[y][x + i - 1] = label[i];
@@ -314,8 +322,9 @@ void visualization_print_graph(const Graph *graph) {
     }
     printf("\nNodes (%d):\n", graph->node_count);
     for (i = 0; i < graph->node_count; ++i) {
-        printf("  [%d] %-24s (%.1f, %.1f)\n", graph->nodes[i].id,
-               graph->nodes[i].name, graph->nodes[i].x, graph->nodes[i].y);
+        printf("  [%d] %-24s %-8s (%.1f, %.1f)\n", graph->nodes[i].id,
+               graph->nodes[i].name, storage_node_type_name(graph->nodes[i].type),
+               graph->nodes[i].x, graph->nodes[i].y);
     }
     printf("Edges (%d):\n", graph->edge_count);
     for (i = 0; i < graph->edge_count; ++i) {

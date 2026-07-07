@@ -2,6 +2,7 @@
 #include "graph.h"
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 
 #ifndef TEST_DATA_DIR
@@ -11,8 +12,8 @@
 int main(void) {
     Graph graph;
     Graph saved_graph;
-    Node first = {10, "Start", 1.25, 2.5};
-    Node second = {20, "Goal", 7.0, 8.75};
+    Node first = {10, "Start", 1.25, 2.5, NODE_GATE, 0.7f, 0.5f, 0.25f};
+    Node second = {20, "Goal", 7.0, 8.75, NODE_LANDMARK, 1.0f, 0.8f, 0.5f};
     const char *temporary_map = "test_saved_map.tmp";
     assert(storage_load_graph(TEST_DATA_DIR "/nodes.csv", TEST_DATA_DIR "/edges.csv", &graph) == MSP_OK);
     assert(graph.node_count == 3);
@@ -20,6 +21,9 @@ int main(void) {
     assert(storage_load_map(TEST_DATA_DIR "/map.txt", &graph) == MSP_OK);
     assert(graph.node_count == 3);
     assert(graph.edge_count == 2);
+    assert(graph.nodes[0].type == NODE_GATE);
+    assert(graph.nodes[1].type == NODE_JUNCTION);
+    assert(fabs((double)graph.nodes[1].height - 0.03) < MSP_EPSILON);
     assert(storage_load_map(TEST_DATA_DIR "/broken_map.txt", &graph) == MSP_ERROR_FORMAT);
     assert(storage_load_map(TEST_DATA_DIR "/missing_map.txt", &graph) == MSP_ERROR_IO);
     graph_init(&graph);
@@ -30,6 +34,8 @@ int main(void) {
     assert(storage_load_map(temporary_map, &saved_graph) == MSP_OK);
     assert(saved_graph.node_count == 2);
     assert(saved_graph.edge_count == 1);
+    assert(saved_graph.nodes[0].type == NODE_GATE);
+    assert(fabs((double)saved_graph.nodes[0].height - 0.25) < MSP_EPSILON);
     assert(graph_get_weight(&saved_graph, 0, 1) == 3.75);
     assert(storage_save_map(NULL, &graph) == MSP_ERROR_INVALID_ARGUMENT);
     assert(storage_save_map(temporary_map, NULL) == MSP_ERROR_INVALID_ARGUMENT);

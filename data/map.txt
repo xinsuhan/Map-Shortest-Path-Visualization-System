@@ -1,31 +1,31 @@
 NODES 27
-0 SouthwestGate 2 12
-1 XiyuanDorm 2 10
-2 XiyuanCanteen 3 8
-3 YouthSquare 5 8
-4 WestSportsField 5 11
-5 LongBridge 7 8
-6 KnowledgeSquare 9 7
-7 JiangAnLibrary 9 5
-8 FirstTeachingBuilding 11 5
-9 ComprehensiveBuilding 11 7
-10 AdministrationBuilding 10 3
-11 FirstBasicBuilding 13 4
-12 JiangAnGym 14 7
-13 EastGate 15 3
-14 SouthGate 10 11
-15 MingyuanLake 7 6
-16 SwimmingPool 13 6
-17 LiberalArtsBuildings 15 1
-18 SecondBasicBuilding 12 9
-19 DongyuanDorm 11 1
-20 InterdisciplinaryArtCenter 13 2
-21 ArtsCollege 8 4
-22 ArchitectureEnvironmentCollege 7 3
-23 DisasterManagementCollege 16 1
-24 EngineeringTrainingCenter 16 8
-25 DongyuanCanteen 10 1
-26 CampusHospital 6 10
+0 SouthwestGate 2 12 GATE 0.7 0.5 0.25
+1 XiyuanDorm 2 10 LANDMARK 1.0 0.8 0.5
+2 XiyuanCanteen 3 8 LANDMARK 0.9 0.7 0.45
+3 YouthSquare 5 8 SQUARE 1.2 1.0 0.05
+4 WestSportsField 5 11 SQUARE 1.5 1.0 0.05
+5 LongBridge 7 8 LANDMARK 1.0 0.4 0.2
+6 KnowledgeSquare 9 7 SQUARE 1.2 0.9 0.05
+7 JiangAnLibrary 9 5 LANDMARK 1.2 1.0 0.7
+8 FirstTeachingBuilding 11 5 LANDMARK 1.2 1.0 0.65
+9 ComprehensiveBuilding 11 7 LANDMARK 1.2 1.0 0.65
+10 AdministrationBuilding 10 3 LANDMARK 1.0 0.8 0.55
+11 FirstBasicBuilding 13 4 LANDMARK 1.1 0.8 0.6
+12 JiangAnGym 14 7 LANDMARK 1.2 1.0 0.55
+13 EastGate 15 3 GATE 0.7 0.5 0.25
+14 SouthGate 10 11 GATE 0.7 0.5 0.25
+15 MingyuanLake 7 6 LAKE 1.5 1.2 0.05
+16 SwimmingPool 13 6 LANDMARK 1.1 0.9 0.35
+17 LiberalArtsBuildings 15 1 LANDMARK 1.3 1.0 0.55
+18 SecondBasicBuilding 12 9 LANDMARK 1.1 0.8 0.6
+19 DongyuanDorm 11 1 LANDMARK 1.0 0.8 0.5
+20 InterdisciplinaryArtCenter 13 2 LANDMARK 1.2 1.0 0.6
+21 ArtsCollege 8 4 LANDMARK 1.1 0.9 0.55
+22 ArchitectureEnvironmentCollege 7 3 LANDMARK 1.1 0.9 0.55
+23 DisasterManagementCollege 16 1 LANDMARK 1.1 0.9 0.55
+24 EngineeringTrainingCenter 16 8 LANDMARK 1.2 1.0 0.55
+25 DongyuanCanteen 10 1 LANDMARK 0.9 0.7 0.45
+26 CampusHospital 6 10 LANDMARK 1.0 0.8 0.5
 EDGES 61
 0 1 2.0
 0 4 3.2

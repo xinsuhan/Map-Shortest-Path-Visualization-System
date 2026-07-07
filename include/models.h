@@ -3,11 +3,23 @@
 
 #include "common.h"
 
+typedef enum {
+    NODE_LANDMARK = 0,
+    NODE_JUNCTION,
+    NODE_LAKE,
+    NODE_SQUARE,
+    NODE_GATE
+} NodeType;
+
 typedef struct {
     int id;
     char name[MSP_NAME_LENGTH];
     double x;
     double y;
+    NodeType type;
+    float width;
+    float depth;
+    float height;
 } Node;
 
 typedef struct {

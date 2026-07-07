@@ -3,6 +3,7 @@
 
 #include "models.h"
 
+const char *storage_node_type_name(NodeType type);
 int storage_load_nodes(const char *file_path, Graph *graph);
 int storage_load_edges(const char *file_path, Graph *graph, int bidirectional);
 int storage_load_graph(const char *nodes_path, const char *edges_path, Graph *graph);

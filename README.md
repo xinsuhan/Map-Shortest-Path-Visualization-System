@@ -81,7 +81,7 @@ f(n) = g(n) + h(n)
   - Edge 边
   - Array 数组
   - Adjacency Matrix 邻接矩阵
-- 数据存储：`map.txt`（默认）与 CSV
+- 数据存储：`map.txt`（默认，支持节点类型与尺寸字段）与 CSV
 - 可视化展示：原生控制台字符地图、ANSI 状态颜色和搜索动画
 
 ---
@@ -169,7 +169,7 @@ ctest --test-dir build --output-on-failure
 
 使用 Ninja、MinGW Makefiles 等单配置生成器时，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
 
-程序默认加载 `data/map.txt`，其中包含四川大学江安校区西区的 16 个简化地标和 32 条双向道路。也可以指定其他地图文件：
+程序默认加载 `data/map.txt`，其中包含四川大学江安校区的 27 个简化地标和 61 条双向道路。节点数据可标记为 `LANDMARK`、`JUNCTION`、`LAKE`、`SQUARE` 或 `GATE`，并携带宽度、深度和高度信息；旧版四字段节点格式仍可继续加载。也可以指定其他地图文件：
 
 ```bash
 ./build/map_shortest_path path/to/map.txt
@@ -250,6 +250,8 @@ Total Distance: 12
 
 - 增加 BFS、DFS、Floyd、Bellman-Ford 等算法
 - 支持用户手动添加节点和边
+- 增加道路路口与转弯节点，逐步拆分缺少实际道路支撑的大跨度直连边
+- 基于校园平面图校准地标与路口的相对坐标
 - 支持动态修改边的权重
 - 支持导入真实地图数据
 - 支持自定义算法动画速度

@@ -6,8 +6,8 @@
 
 int main(void) {
     Graph graph;
-    Node first = {1, "A", 0.0, 0.0};
-    Node second = {2, "B", 1.0, 0.0};
+    Node first = {1, "A", 0.0, 0.0, NODE_LANDMARK, 1.0f, 0.8f, 0.5f};
+    Node second = {2, "B", 1.0, 0.0, NODE_LANDMARK, 1.0f, 0.8f, 0.5f};
 
     graph_init(&graph);
     assert(graph_add_node(&graph, first) == MSP_OK);

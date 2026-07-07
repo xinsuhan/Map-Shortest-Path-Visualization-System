@@ -74,6 +74,7 @@ f(n) = g(n) + h(n)
 - 编程语言：C11
 - 构建工具：CMake 3.16+
 - 测试工具：CTest、C 标准库 `assert`
+- 可选 3D 渲染：raylib 5.5（CMake 自动下载）
 - 核心算法：Dijkstra Algorithm、A* Search Algorithm
 - 核心数据结构：
   - Graph 图
@@ -99,6 +100,7 @@ Map-Shortest-Path-Visualization-System/
 │   ├── astar.h
 │   ├── storage.h
 │   ├── input.h
+│   ├── renderer3d.h
 │   └── visualization.h
 │
 ├── src/                      # C 源代码
@@ -167,9 +169,31 @@ ctest --test-dir build --output-on-failure
 ./build/map_shortest_path
 ```
 
+### 5. Windows 3D 模式
+
+3D 模式使用 raylib 5.5。首次配置时 CMake 会从 raylib 官方仓库下载并编译依赖：
+
+```powershell
+$env:PATH = 'D:\new\Tools\mingw492_32\bin;' + $env:PATH
+cmake -S . -B build-3d -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DMSP_ENABLE_3D=ON
+cmake --build build-3d
+.\build-3d\map_shortest_path.exe
+```
+
+启动后在控制台菜单选择 `8` 进入 3D 校园视图。3D 模式保留原控制台功能，并提供：
+
+- 低矮 2.5D 建筑、校门、湖泊、广场和路口标记
+- 浅灰普通道路与亮色加粗最短路径
+- 左键选择起点、右键选择终点
+- `D` / `A` 切换 Dijkstra 与 A*
+- `Enter` 开始搜索，`Space` 暂停或继续动画
+- `1` / `2` / `3` 调整动画速度
+- `WASD`、鼠标和滚轮控制相机，`Home` 恢复默认视角
+- `R` 重置选择，`Esc` 返回控制台
+
 使用 Ninja、MinGW Makefiles 等单配置生成器时，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
 
-程序默认加载 `data/map.txt`，其中包含四川大学江安校区的 27 个简化地标和 61 条双向道路。节点数据可标记为 `LANDMARK`、`JUNCTION`、`LAKE`、`SQUARE` 或 `GATE`，并携带宽度、深度和高度信息；旧版四字段节点格式仍可继续加载。也可以指定其他地图文件：
+程序默认加载 `data/map.txt`，其中包含四川大学江安校区的 35 个节点（含 8 个道路路口）和 73 条双向道路。节点数据可标记为 `LANDMARK`、`JUNCTION`、`LAKE`、`SQUARE` 或 `GATE`，并携带宽度、深度和高度信息；旧版四字段节点格式仍可继续加载。也可以指定其他地图文件：
 
 ```bash
 ./build/map_shortest_path path/to/map.txt

@@ -22,17 +22,17 @@ int main(void) {
     Graph graph;
     PathResult dijkstra_result;
     PathResult astar_result;
-    const int route_one[] = {1, 3, 15, 7, 8, 11, 13};
-    const int route_three[] = {4, 3, 15, 7, 10};
+    const int route_one[] = {1, 0, 27, 30, 31, 32, 13};
+    const int route_three[] = {4, 27, 28, 29, 7, 10};
 
     assert(storage_load_map(PROJECT_DATA_DIR "/map.txt", &graph) == MSP_OK);
-    assert(graph.node_count == 27);
-    assert(graph.edge_count == 61);
+    assert(graph.node_count == 35);
+    assert(graph.edge_count == 73);
 
     assert(dijkstra_find_path(&graph, 1, 13, &dijkstra_result) == MSP_OK);
     assert(astar_find_path(&graph, 1, 13, &astar_result) == MSP_OK);
-    assert(fabs(dijkstra_result.total_distance - 15.5) < MSP_EPSILON);
-    assert(fabs(astar_result.total_distance - 15.5) < MSP_EPSILON);
+    assert(fabs(dijkstra_result.total_distance - 12.8) < MSP_EPSILON);
+    assert(fabs(astar_result.total_distance - 12.8) < MSP_EPSILON);
     assert_path(&dijkstra_result, route_one,
                 (int)(sizeof(route_one) / sizeof(route_one[0])));
     assert_path(&astar_result, route_one,
@@ -40,8 +40,8 @@ int main(void) {
 
     assert(dijkstra_find_path(&graph, 4, 10, &dijkstra_result) == MSP_OK);
     assert(astar_find_path(&graph, 4, 10, &astar_result) == MSP_OK);
-    assert(fabs(dijkstra_result.total_distance - 11.2) < MSP_EPSILON);
-    assert(fabs(astar_result.total_distance - 11.2) < MSP_EPSILON);
+    assert(fabs(dijkstra_result.total_distance - 10.3) < MSP_EPSILON);
+    assert(fabs(astar_result.total_distance - 10.3) < MSP_EPSILON);
     assert_path(&dijkstra_result, route_three,
                 (int)(sizeof(route_three) / sizeof(route_three[0])));
     assert_path(&astar_result, route_three,

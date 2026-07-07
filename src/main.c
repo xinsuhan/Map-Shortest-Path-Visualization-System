@@ -5,6 +5,10 @@
 #include "storage.h"
 #include "visualization.h"
 
+#ifdef MSP_HAS_3D
+#include "renderer3d.h"
+#endif
+
 #include <stdio.h>
 
 typedef struct {
@@ -48,6 +52,9 @@ static void show_main_screen(const Graph *graph, const AppSettings *settings) {
     printf("3. Select algorithm   4. Select speed\n");
     printf("5. Start visualization\n");
     printf("6. Reset selections   7. Show map data\n");
+#ifdef MSP_HAS_3D
+    printf("8. Open 3D campus view\n");
+#endif
     printf("0. Exit\n");
 }
 
@@ -146,7 +153,11 @@ int main(int argc, char *argv[]) {
     for (;;) {
         show_main_screen(&graph, &settings);
         if (!input_read_int("Select: ", &choice)) {
+#ifdef MSP_HAS_3D
+            printf("Invalid menu input: enter a number from 0 to 8.\n");
+#else
             printf("Invalid menu input: enter a number from 0 to 7.\n");
+#endif
             wait_for_enter();
             continue;
         }
@@ -170,6 +181,10 @@ int main(int argc, char *argv[]) {
             printf("Selections and speed have been reset.\n");
         } else if (choice == 7) {
             visualization_print_graph(&graph);
+#ifdef MSP_HAS_3D
+        } else if (choice == 8) {
+            renderer3d_run(&graph);
+#endif
         } else {
             printf("Unknown option: choose a number from 0 to 7.\n");
         }

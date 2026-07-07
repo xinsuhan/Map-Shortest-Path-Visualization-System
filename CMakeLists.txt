@@ -27,6 +27,23 @@ endif()
 add_executable(map_shortest_path src/main.c)
 target_link_libraries(map_shortest_path PRIVATE shortest_path_core)
 
+option(MSP_ENABLE_3D "Build the optional raylib 3D renderer" OFF)
+if(MSP_ENABLE_3D)
+    find_package(raylib 5.0 QUIET)
+    if(NOT raylib_FOUND)
+        include(FetchContent)
+        set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+        FetchContent_Declare(raylib
+            URL https://github.com/raysan5/raylib/archive/refs/tags/5.5.tar.gz
+            DOWNLOAD_EXTRACT_TIMESTAMP OFF)
+        FetchContent_MakeAvailable(raylib)
+    endif()
+    target_sources(map_shortest_path PRIVATE src/renderer3d.c)
+    target_link_libraries(map_shortest_path PRIVATE raylib)
+    target_compile_definitions(map_shortest_path PRIVATE MSP_HAS_3D=1)
+endif()
+
 include(CTest)
 if(BUILD_TESTING)
     foreach(test_name graph dijkstra astar storage scu_map input edge_cases path_result)

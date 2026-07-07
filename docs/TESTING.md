@@ -6,7 +6,7 @@
 
 - 确认 CMake 能正确生成并编译项目。
 - 确认全部自动化测试通过。
-- 确认默认地图能加载 27 个节点和 61 条双向道路。
+- 确认默认地图能加载 35 个节点和 73 条双向道路。
 - 确认 Dijkstra 与 A* 能得到正确且一致的最短路径。
 - 确认节点类型、尺寸以及新旧地图格式都能正确读取。
 - 确认控制台菜单、起终点选择、动画速度和重置功能正常。
@@ -154,8 +154,8 @@ Select-String -Path data\map.txt -Pattern '^NODES ','^EDGES '
 预期结果：
 
 ```text
-NODES 27
-EDGES 61
+NODES 35
+EDGES 73
 ```
 
 运行地图测试：
@@ -169,15 +169,15 @@ ctest --test-dir build-test -R scu_map --output-on-failure
 1. 从 `XiyuanDorm`（1）到 `EastGate`（13）：
 
 ```text
-1 -> 3 -> 15 -> 7 -> 8 -> 11 -> 13
-Total distance: 15.5
+1 -> 0 -> 27 -> 30 -> 31 -> 32 -> 13
+Total distance: 12.8
 ```
 
 2. 从 `WestSportsField`（4）到 `AdministrationBuilding`（10）：
 
 ```text
-4 -> 3 -> 15 -> 7 -> 10
-Total distance: 11.2
+4 -> 27 -> 28 -> 29 -> 7 -> 10
+Total distance: 10.3
 ```
 
 Dijkstra 和 A* 都应得到上述路径和距离。
@@ -200,9 +200,9 @@ Dijkstra 和 A* 都应得到上述路径和距离。
 | M04 | 输入 `3`，选择 `1` | 当前算法显示为 Dijkstra |
 | M05 | 输入 `4`，选择 `3` | 动画速度显示为 Fast（150 ms/frame） |
 | M06 | 输入 `5` | 播放节点访问动画，结束后高亮最短路径 |
-| M07 | 查看结果 | 总距离为 `15.50`，路径与第 8 节一致 |
+| M07 | 查看结果 | 总距离为 `12.80`，路径与第 8 节一致 |
 | M08 | 将算法切换为 A* 后再次运行 | 最短距离和路径与 Dijkstra 一致 |
-| M09 | 输入 `7` | 显示 27 个节点、61 条边及节点类型 |
+| M09 | 输入 `7` | 显示 35 个节点、73 条边及节点类型 |
 | M10 | 输入 `6` | 起点、终点和速度恢复默认值 |
 | M11 | 输入 `0` | 程序正常退出并显示 `Goodbye.` |
 
@@ -273,6 +273,29 @@ git status --short
 - `git diff --check` 没有空白错误。
 - `git status --short` 中只包含本次计划提交的源文件或文档。
 - 至少完成 M01～M11 的手工冒烟测试。
+
+### 3D 模式测试
+
+配置并编译启用 raylib 的 3D 版本：
+
+```powershell
+$env:PATH = 'D:\new\Tools\mingw492_32\bin;' + $env:PATH
+cmake -S . -B build-3d -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DMSP_ENABLE_3D=ON
+cmake --build build-3d
+ctest --test-dir build-3d --output-on-failure
+.\build-3d\map_shortest_path.exe
+```
+
+在控制台选择 `8`，检查以下项目：
+
+- 建筑保持低矮，不遮挡道路。
+- 湖泊、广场、校门、建筑和路口形态不同。
+- 普通道路为浅灰细线，最终路径为亮色粗线。
+- 左键和右键能分别选择起点、终点。
+- `Enter` 能启动访问动画，右侧显示距离和访问节点数。
+- `D` 与 `A` 的最短距离一致。
+- `WASD`、滚轮、`Home` 和 `R` 工作正常。
+- `Esc` 能关闭 3D 窗口并返回控制台。
 
 ## 13. 如何新增测试代码
 
@@ -346,7 +369,7 @@ ctest --test-dir build-test --output-on-failure
 ```c
 #include <math.h>
 
-assert(fabs(result.total_distance - 15.5) < MSP_EPSILON);
+assert(fabs(result.total_distance - 12.8) < MSP_EPSILON);
 ```
 
 ## 14. 常见问题

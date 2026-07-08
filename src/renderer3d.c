@@ -25,6 +25,24 @@
 #define ROAD_HEIGHT 0.035f
 #define PATH_HEIGHT 0.070f
 
+static const Color COLOR_MAP_SKY = {225, 237, 231, 255};
+static const Color COLOR_MAP_GROUND = {239, 240, 226, 255};
+static const Color COLOR_GRASS = {195, 216, 184, 255};
+static const Color COLOR_WATER = {112, 188, 224, 255};
+static const Color COLOR_WATER_BORDER = {71, 143, 184, 210};
+static const Color COLOR_ROAD_BORDER = {181, 188, 184, 255};
+static const Color COLOR_ROAD_MAIN = {251, 250, 244, 255};
+static const Color COLOR_ROAD_BRANCH = {244, 245, 239, 245};
+static const Color COLOR_ROAD_ENTRANCE = {236, 239, 234, 185};
+static const Color COLOR_ROUTE_SHADOW = {255, 255, 250, 245};
+static const Color COLOR_ROUTE = {239, 126, 40, 255};
+static const Color COLOR_START = {42, 166, 96, 255};
+static const Color COLOR_GOAL = {218, 73, 66, 255};
+static const Color COLOR_ACCENT = {48, 112, 91, 255};
+static const Color COLOR_TEXT = {47, 61, 56, 255};
+static const Color COLOR_PANEL = {251, 252, 249, 255};
+static const Color COLOR_CARD = {255, 255, 252, 255};
+
 typedef enum { VIEW_OVERVIEW = 0, VIEW_NAVIGATION, VIEW_PATH } CameraView;
 typedef enum { AREA_GRASS = 0, AREA_LAKE, AREA_SPORTS, AREA_SQUARE } AreaType;
 
@@ -220,12 +238,31 @@ static Camera3D camera_for_view(const Graph *graph, const SceneLayout *layout,
 
 static Color area_color(AreaType type) {
     switch (type) {
-        case AREA_LAKE: return (Color){112, 184, 218, 255};
-        case AREA_SPORTS: return (Color){112, 166, 112, 255};
-        case AREA_SQUARE: return (Color){221, 211, 180, 255};
+        case AREA_LAKE: return COLOR_WATER;
+        case AREA_SPORTS: return (Color){157, 188, 151, 255};
+        case AREA_SQUARE: return (Color){226, 218, 194, 255};
         case AREA_GRASS:
-        default: return (Color){190, 217, 179, 255};
+        default: return COLOR_GRASS;
     }
+}
+
+static void draw_soft_lake(Vector3 center, float width, float depth) {
+    float radius = depth * 0.50f;
+    float span = fmaxf(0.0f, width - radius * 2.0f);
+    float offsets[] = {-span * 0.50f, 0.0f, span * 0.50f};
+    int i;
+    for (i = 0; i < 3; ++i) {
+        DrawCylinder((Vector3){center.x + offsets[i], -0.010f, center.z},
+                     radius + 0.07f, radius + 0.07f, 0.020f, 32, COLOR_WATER_BORDER);
+    }
+    for (i = 0; i < 3; ++i) {
+        DrawCylinder((Vector3){center.x + offsets[i], -0.002f, center.z},
+                     radius, radius, 0.022f, 32, COLOR_WATER);
+    }
+    DrawCube((Vector3){center.x - width * 0.12f, 0.018f, center.z - depth * 0.18f},
+             width * 0.34f, 0.008f, 0.035f, Fade(WHITE, 0.52f));
+    DrawCube((Vector3){center.x + width * 0.16f, 0.019f, center.z + depth * 0.20f},
+             width * 0.22f, 0.008f, 0.028f, Fade(WHITE, 0.38f));
 }
 
 static void draw_environment(const SceneLayout *layout) {
@@ -233,7 +270,7 @@ static void draw_environment(const SceneLayout *layout) {
     float ground_width = layout->max_x - layout->min_x + 5.5f;
     float ground_depth = layout->max_z - layout->min_z + 5.0f;
     DrawPlane((Vector3){0.0f, -0.035f, 0.0f}, (Vector2){ground_width, ground_depth},
-              (Color){224, 230, 214, 255});
+              COLOR_MAP_GROUND);
     DrawCubeWires((Vector3){0.0f, -0.025f, 0.0f}, ground_width, 0.02f, ground_depth,
                   Fade((Color){118, 143, 121, 255}, 0.34f));
     for (i = 0; i < (int)(sizeof(MAP_AREAS) / sizeof(MAP_AREAS[0])); ++i) {
@@ -241,14 +278,19 @@ static void draw_environment(const SceneLayout *layout) {
         Vector3 center = world_position(area->x, area->y, layout, -0.012f);
         float width = area->width * RENDER_SCALE_X;
         float depth = area->depth * RENDER_SCALE_Z;
+        if (area->type == AREA_LAKE) {
+            draw_soft_lake(center, width, depth);
+            continue;
+        }
         DrawCube(center, width, 0.025f, depth, area_color(area->type));
         if (area->type != AREA_GRASS) {
             DrawCubeWires(center, width, 0.027f, depth,
-                          Fade((Color){77, 104, 91, 255}, 0.45f));
+                          area->type == AREA_LAKE ? COLOR_WATER_BORDER
+                                                  : Fade((Color){102, 119, 105, 255}, 0.38f));
         }
         if (area->type == AREA_SPORTS) {
             DrawCubeWires(center, width * 0.82f, 0.029f, depth * 0.70f,
-                          (Color){190, 115, 91, 210});
+                          (Color){161, 102, 139, 220});
         }
     }
 }
@@ -261,11 +303,35 @@ static void draw_tree(float x, float y, const SceneLayout *layout) {
                (Color){91, 145, 87, 255});
 }
 
+static void draw_flowering_tree(float x, float y, const SceneLayout *layout) {
+    Vector3 base = world_position(x, y, layout, 0.0f);
+    DrawCylinder((Vector3){base.x, 0.09f, base.z}, 0.030f, 0.040f, 0.18f, 8,
+                 (Color){121, 91, 69, 255});
+    DrawSphere((Vector3){base.x - 0.06f, 0.25f, base.z}, 0.13f,
+               (Color){227, 166, 182, 255});
+    DrawSphere((Vector3){base.x + 0.07f, 0.27f, base.z + 0.03f}, 0.12f,
+               (Color){239, 185, 195, 255});
+}
+
+static void draw_shrub(float x, float y, const SceneLayout *layout, Color color) {
+    Vector3 base = world_position(x, y, layout, 0.08f);
+    DrawSphere(base, 0.09f, color);
+    DrawSphere((Vector3){base.x + 0.10f, base.y, base.z + 0.03f}, 0.07f, color);
+}
+
 static void draw_trees(const SceneLayout *layout) {
     int i;
     for (i = 0; i < (int)(sizeof(TREE_POINTS) / sizeof(TREE_POINTS[0])); ++i) {
-        draw_tree(TREE_POINTS[i].x, TREE_POINTS[i].y, layout);
+        if (i == 5 || i == 8 || i == 15 || i == 18) {
+            draw_flowering_tree(TREE_POINTS[i].x, TREE_POINTS[i].y, layout);
+        } else {
+            draw_tree(TREE_POINTS[i].x, TREE_POINTS[i].y, layout);
+        }
     }
+    draw_shrub(5.9f, 6.4f, layout, (Color){105, 158, 94, 255});
+    draw_shrub(6.4f, 5.1f, layout, (Color){116, 169, 103, 255});
+    draw_shrub(7.8f, 5.1f, layout, (Color){202, 139, 160, 255});
+    draw_shrub(8.0f, 6.4f, layout, (Color){108, 161, 96, 255});
 }
 
 static int name_contains(const char *text, const char *needle) {
@@ -282,14 +348,37 @@ static int name_contains(const char *text, const char *needle) {
 }
 
 static Color building_color(const Node *node) {
-    if (name_contains(node->name, "Canteen")) return (Color){224, 164, 98, 255};
-    if (name_contains(node->name, "Dorm")) return (Color){137, 177, 145, 255};
+    if (name_contains(node->name, "Canteen")) return (Color){204, 137, 78, 255};
+    if (name_contains(node->name, "Dorm")) return (Color){190, 139, 96, 255};
     if (name_contains(node->name, "Hospital")) return (Color){210, 132, 127, 255};
-    if (name_contains(node->name, "Library")) return (Color){102, 145, 173, 255};
-    if (name_contains(node->name, "Gym")) return (Color){148, 126, 170, 255};
+    if (name_contains(node->name, "Library")) return (Color){60, 101, 148, 255};
+    if (name_contains(node->name, "SecondBasic") ||
+        name_contains(node->name, "EngineeringTraining")) return (Color){91, 126, 164, 255};
+    if (name_contains(node->name, "Gym") || name_contains(node->name, "Sports"))
+        return (Color){145, 108, 158, 255};
     if (name_contains(node->name, "College") || name_contains(node->name, "Teaching") ||
-        name_contains(node->name, "Basic")) return (Color){124, 157, 181, 255};
-    return (Color){151, 164, 158, 255};
+        name_contains(node->name, "Basic")) return (Color){118, 148, 169, 255};
+    return (Color){148, 159, 153, 255};
+}
+
+static void draw_building_details(const Node *node, Vector3 center,
+                                  float width, float depth, float height) {
+    Color window = name_contains(node->name, "Canteen") || name_contains(node->name, "Dorm")
+                       ? (Color){247, 220, 169, 235}
+                       : (Color){205, 229, 238, 235};
+    float facade_z = center.z + depth * 0.505f;
+    if (height >= 0.17f && width >= 0.9f) {
+        DrawCube((Vector3){center.x - width * 0.24f, center.y, facade_z},
+                 width * 0.16f, height * 0.24f, 0.025f, window);
+        DrawCube((Vector3){center.x + width * 0.24f, center.y, facade_z},
+                 width * 0.16f, height * 0.24f, 0.025f, window);
+    }
+    DrawCube((Vector3){center.x, 0.045f, center.z + depth * 0.54f},
+             fminf(width * 0.22f, 0.38f), 0.09f, 0.10f,
+             (Color){76, 91, 87, 225});
+    DrawCube((Vector3){center.x, 0.018f, center.z + depth * 0.64f},
+             fminf(width * 0.34f, 0.52f), 0.025f, 0.16f,
+             (Color){207, 205, 190, 255});
 }
 
 static void draw_gate(const Node *node, const SceneLayout *layout, Color color) {
@@ -311,6 +400,7 @@ static void draw_node(const Node *node, const SceneLayout *layout,
     float depth = node_render_depth(node);
     float height = node_render_height(node);
     Color color;
+    int highlighted = node->id == state->hover_id || node->id == state->search_match_id;
     if (node->type == NODE_JUNCTION) return;
     if (node->type == NODE_LAKE || node->type == NODE_SQUARE || node->id == 4) return;
     if (node->id == 16) {
@@ -321,19 +411,25 @@ static void draw_node(const Node *node, const SceneLayout *layout,
         return;
     }
     color = building_color(node);
-    if (node->id == state->start_id) color = (Color){53, 174, 104, 255};
-    if (node->id == state->goal_id) color = (Color){224, 86, 78, 255};
+    if (highlighted) color = ColorBrightness(color, 0.18f);
     if (node->type == NODE_GATE) {
-        draw_gate(node, layout, color);
+        draw_gate(node, layout, (Color){67, 145, 99, 255});
         return;
     }
-    DrawCube((Vector3){center.x + 0.08f, 0.025f, center.z + 0.08f},
-             width, 0.025f, depth, Fade((Color){72, 83, 80, 255}, 0.22f));
+    DrawCube((Vector3){center.x + 0.10f, 0.020f, center.z + 0.10f},
+             width + 0.05f, 0.022f, depth + 0.05f, Fade((Color){54, 67, 63, 255}, 0.25f));
     center.y = height * 0.5f;
     DrawCube(center, width, height, depth, color);
     DrawCubeWires(center, width, height, depth, Fade((Color){58, 72, 72, 255}, 0.52f));
+    if (highlighted) {
+        DrawCubeWires(center, width + 0.08f, height + 0.06f, depth + 0.08f,
+                      node->id == state->search_match_id
+                          ? (Color){239, 151, 52, 255}
+                          : (Color){51, 127, 105, 255});
+    }
     DrawCube((Vector3){center.x, height + 0.012f, center.z},
              width * 0.88f, 0.025f, depth * 0.88f, Fade(RAYWHITE, 0.24f));
+    draw_building_details(node, center, width, depth, height);
 }
 
 static void draw_band(Vector3 from, Vector3 to, float width, Color color) {
@@ -352,32 +448,80 @@ static void draw_band(Vector3 from, Vector3 to, float width, Color color) {
     DrawTriangleStrip3D(points, 4, color);
 }
 
-static float road_width(const Node *from, const Node *to) {
-    if (from->type == NODE_JUNCTION && to->type == NODE_JUNCTION) return 0.38f;
+static void draw_route_arrow(Vector3 from, Vector3 to) {
+    float dx = to.x - from.x;
+    float dz = to.z - from.z;
+    float length = sqrtf(dx * dx + dz * dz);
+    Vector3 middle, tip, left, right;
+    float px, pz;
+    if (length < 1.2f) return;
+    dx /= length;
+    dz /= length;
+    px = -dz;
+    pz = dx;
+    middle = Vector3Lerp(from, to, 0.53f);
+    middle.y = PATH_HEIGHT + 0.018f;
+    tip = (Vector3){middle.x + dx * 0.24f, middle.y, middle.z + dz * 0.24f};
+    left = (Vector3){middle.x - dx * 0.14f + px * 0.13f, middle.y,
+                     middle.z - dz * 0.14f + pz * 0.13f};
+    right = (Vector3){middle.x - dx * 0.14f - px * 0.13f, middle.y,
+                      middle.z - dz * 0.14f - pz * 0.13f};
+    DrawTriangle3D(left, tip, right, (Color){255, 239, 195, 245});
+}
+
+static int road_class(const Node *from, const Node *to) {
+    if (from->type == NODE_JUNCTION && to->type == NODE_JUNCTION) return 2;
     if ((from->type == NODE_GATE && to->type == NODE_JUNCTION) ||
-        (to->type == NODE_GATE && from->type == NODE_JUNCTION)) return 0.32f;
-    if (from->type == NODE_JUNCTION || to->type == NODE_JUNCTION) return 0.25f;
-    return 0.16f;
+        (to->type == NODE_GATE && from->type == NODE_JUNCTION)) return 2;
+    if (from->type == NODE_JUNCTION || to->type == NODE_JUNCTION) return 1;
+    return 0;
+}
+
+static float road_width(int road_level) {
+    if (road_level == 2) return 0.42f;
+    if (road_level == 1) return 0.27f;
+    return 0.13f;
+}
+
+static Color road_fill(int road_level) {
+    if (road_level == 2) return COLOR_ROAD_MAIN;
+    if (road_level == 1) return COLOR_ROAD_BRANCH;
+    return COLOR_ROAD_ENTRANCE;
+}
+
+static void draw_road_disc(Vector3 position, float width, float height, Color color) {
+    DrawCylinder((Vector3){position.x, height, position.z}, width * 0.5f, width * 0.5f,
+                 0.008f, 18, color);
 }
 
 static void draw_roads(const Graph *graph, const SceneLayout *layout,
                        const RendererState *state) {
     int i;
+    int pass;
     int show_path = state->has_result &&
                     state->animation_count >= state->result.visited_count;
-    for (i = 0; i < graph->edge_count; ++i) {
-        const Edge *edge = &graph->edges[i];
-        const Node *from = graph_get_node(graph, edge->from_id);
-        const Node *to = graph_get_node(graph, edge->to_id);
-        float width;
-        if (from == NULL || to == NULL) continue;
-        width = road_width(from, to);
-        draw_band(node_position(from, layout, ROAD_HEIGHT - 0.004f),
-                  node_position(to, layout, ROAD_HEIGHT - 0.004f), width + 0.10f,
-                  (Color){245, 245, 237, 255});
-        draw_band(node_position(from, layout, ROAD_HEIGHT),
-                  node_position(to, layout, ROAD_HEIGHT), width,
-                  (Color){194, 199, 194, 255});
+    for (pass = 0; pass <= 2; ++pass) {
+        for (i = 0; i < graph->edge_count; ++i) {
+            const Edge *edge = &graph->edges[i];
+            const Node *from = graph_get_node(graph, edge->from_id);
+            const Node *to = graph_get_node(graph, edge->to_id);
+            Vector3 a, b;
+            float width;
+            Color border;
+            if (from == NULL || to == NULL || road_class(from, to) != pass) continue;
+            width = road_width(pass);
+            border = pass == 0 ? Fade(COLOR_ROAD_BORDER, 0.50f) : COLOR_ROAD_BORDER;
+            a = node_position(from, layout, ROAD_HEIGHT);
+            b = node_position(to, layout, ROAD_HEIGHT);
+            draw_band(a, b, width + 0.08f, border);
+            draw_road_disc(a, width + 0.08f, ROAD_HEIGHT, border);
+            draw_road_disc(b, width + 0.08f, ROAD_HEIGHT, border);
+            a.y += 0.006f;
+            b.y += 0.006f;
+            draw_band(a, b, width, road_fill(pass));
+            draw_road_disc(a, width, ROAD_HEIGHT + 0.006f, road_fill(pass));
+            draw_road_disc(b, width, ROAD_HEIGHT + 0.006f, road_fill(pass));
+        }
     }
     if (!show_path) return;
     for (i = 0; i < graph->edge_count; ++i) {
@@ -387,9 +531,58 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
         from = graph_get_node(graph, edge->from_id);
         to = graph_get_node(graph, edge->to_id);
         if (from == NULL || to == NULL) continue;
+        draw_band(node_position(from, layout, PATH_HEIGHT - 0.009f),
+                  node_position(to, layout, PATH_HEIGHT - 0.009f), 0.84f,
+                  Fade(COLOR_ROUTE, 0.20f));
+        draw_band(node_position(from, layout, PATH_HEIGHT - 0.004f),
+                  node_position(to, layout, PATH_HEIGHT - 0.004f), 0.62f,
+                  COLOR_ROUTE_SHADOW);
+        draw_road_disc(node_position(from, layout, PATH_HEIGHT - 0.004f), 0.62f,
+                       PATH_HEIGHT - 0.004f, COLOR_ROUTE_SHADOW);
+        draw_road_disc(node_position(to, layout, PATH_HEIGHT - 0.004f), 0.62f,
+                       PATH_HEIGHT - 0.004f, COLOR_ROUTE_SHADOW);
         draw_band(node_position(from, layout, PATH_HEIGHT),
-                  node_position(to, layout, PATH_HEIGHT), 0.46f,
-                  (Color){242, 143, 55, 255});
+                  node_position(to, layout, PATH_HEIGHT), 0.46f, COLOR_ROUTE);
+        draw_road_disc(node_position(from, layout, PATH_HEIGHT), 0.46f,
+                       PATH_HEIGHT, COLOR_ROUTE);
+        draw_road_disc(node_position(to, layout, PATH_HEIGHT), 0.46f,
+                       PATH_HEIGHT, COLOR_ROUTE);
+        draw_road_disc(node_position(from, layout, PATH_HEIGHT + 0.010f), 0.13f,
+                       PATH_HEIGHT + 0.010f, WHITE);
+        draw_road_disc(node_position(to, layout, PATH_HEIGHT + 0.010f), 0.13f,
+                       PATH_HEIGHT + 0.010f, WHITE);
+        draw_route_arrow(node_position(from, layout, PATH_HEIGHT),
+                         node_position(to, layout, PATH_HEIGHT));
+    }
+}
+
+static void draw_map_pin(const Node *node, const SceneLayout *layout, Color color) {
+    Vector3 position = node_position(node, layout, 0.0f);
+    DrawCylinder((Vector3){position.x, 0.12f, position.z}, 0.24f, 0.24f,
+                 0.055f, 24, WHITE);
+    DrawCylinder((Vector3){position.x, 0.155f, position.z}, 0.17f, 0.17f,
+                 0.065f, 24, color);
+    DrawSphere((Vector3){position.x, 0.30f, position.z}, 0.105f, color);
+}
+
+static void draw_selection_markers(const Graph *graph, const SceneLayout *layout,
+                                   const RendererState *state) {
+    const Node *start = graph_get_node(graph, state->start_id);
+    const Node *goal = graph_get_node(graph, state->goal_id);
+    const Node *search = graph_get_node(graph, state->search_match_id);
+    const Node *hover = graph_get_node(graph, state->hover_id);
+    if (start != NULL) draw_map_pin(start, layout, COLOR_START);
+    if (goal != NULL) draw_map_pin(goal, layout, COLOR_GOAL);
+    if (search != NULL && search->id != state->start_id && search->id != state->goal_id) {
+        Vector3 position = node_position(search, layout, 0.10f);
+        DrawCylinder(position, 0.25f, 0.25f, 0.025f, 24,
+                     Fade((Color){242, 158, 57, 255}, 0.86f));
+    }
+    if (hover != NULL && hover->id != state->start_id && hover->id != state->goal_id &&
+        hover->id != state->search_match_id) {
+        Vector3 position = node_position(hover, layout, 0.09f);
+        DrawCylinder(position, 0.23f, 0.23f, 0.022f, 24,
+                     Fade(COLOR_ACCENT, 0.78f));
     }
 }
 
@@ -471,8 +664,8 @@ static void update_animation(RendererState *state) {
 }
 
 static int is_important_landmark(int id) {
-    return id == 0 || id == 4 || id == 7 || id == 12 || id == 13 ||
-           id == 14 || id == 15;
+    return id == 0 || id == 2 || id == 4 || id == 7 || id == 11 || id == 12 ||
+           id == 13 || id == 14 || id == 15 || id == 18 || id == 24 || id == 25;
 }
 
 static int label_visible(const Node *node, const Camera3D *camera,
@@ -483,6 +676,18 @@ static int label_visible(const Node *node, const Camera3D *camera,
     if (is_important_landmark(node->id)) return 1;
     return camera->projection == CAMERA_ORTHOGRAPHIC &&
            camera->fovy < layout->overview_size * 0.58f;
+}
+
+static void draw_rounded_label(Rectangle bounds, const char *text, int font_size,
+                               int priority) {
+    Rectangle shadow = {bounds.x + 2.0f, bounds.y + 2.0f, bounds.width, bounds.height};
+    DrawRectangleRounded(shadow, 0.24f, 6, Fade((Color){56, 69, 64, 255}, 0.16f));
+    DrawRectangleRounded(bounds, 0.24f, 6,
+                         priority ? (Color){255, 255, 253, 242}
+                                  : (Color){255, 255, 253, 220});
+    DrawRectangleRoundedLinesEx(bounds, 0.24f, 6, 1.0f,
+                                Fade((Color){101, 116, 109, 255}, 0.42f));
+    DrawText(text, (int)bounds.x + 5, (int)bounds.y + 3, font_size, COLOR_TEXT);
 }
 
 static void draw_labels(const Graph *graph, const SceneLayout *layout,
@@ -513,14 +718,36 @@ static void draw_labels(const Graph *graph, const SceneLayout *layout,
                 if (CheckCollisionRecs(bounds, occupied[j])) { collision = 1; break; }
             }
             if (collision && !priority) continue;
-            DrawRectangleRounded(bounds, 0.18f, 4,
-                                 priority ? (Color){255, 255, 250, 238}
-                                          : (Color){248, 249, 242, 220});
-            DrawText(node->name, (int)bounds.x + 5, (int)bounds.y + 3,
-                     font_size, (Color){44, 56, 55, 255});
+            draw_rounded_label(bounds, node->name, font_size, priority);
             if (occupied_count < MSP_MAX_NODES) occupied[occupied_count++] = bounds;
         }
     }
+}
+
+static void draw_screen_pin(const Node *node, const SceneLayout *layout,
+                            const Camera3D *camera, Color color, const char *marker) {
+    Vector2 screen;
+    if (node == NULL) return;
+    screen = GetWorldToScreenEx(node_position(node, layout, 0.34f),
+                                *camera, MAP_WIDTH, MAP_HEIGHT);
+    if (screen.x < 12 || screen.x > MAP_WIDTH - 12 ||
+        screen.y < 12 || screen.y > MAP_HEIGHT - 12) return;
+    DrawTriangle((Vector2){screen.x, screen.y + 18},
+                 (Vector2){screen.x - 6, screen.y + 6},
+                 (Vector2){screen.x + 6, screen.y + 6}, color);
+    DrawCircle((int)screen.x + 1, (int)screen.y + 2, 11,
+               Fade((Color){45, 55, 51, 255}, 0.18f));
+    DrawCircle((int)screen.x, (int)screen.y, 11, WHITE);
+    DrawCircle((int)screen.x, (int)screen.y, 8, color);
+    DrawText(marker, (int)screen.x - MeasureText(marker, 10) / 2,
+             (int)screen.y - 5, 10, WHITE);
+}
+
+static void draw_screen_selection_markers(const Graph *graph, const SceneLayout *layout,
+                                          const Camera3D *camera,
+                                          const RendererState *state) {
+    draw_screen_pin(graph_get_node(graph, state->start_id), layout, camera, COLOR_START, "S");
+    draw_screen_pin(graph_get_node(graph, state->goal_id), layout, camera, COLOR_GOAL, "D");
 }
 
 static Rectangle search_box(void) {
@@ -538,6 +765,33 @@ static Rectangle navigate_button(void) {
 static Rectangle tool_button(int index) {
     return (Rectangle){WINDOW_WIDTH - 58.0f, WINDOW_HEIGHT - 206.0f + index * 43.0f,
                        38.0f, 36.0f};
+}
+
+static Rectangle legend_panel(void) {
+    return (Rectangle){WINDOW_WIDTH - 166.0f, 18.0f, 146.0f, 166.0f};
+}
+
+static void draw_ui_card(Rectangle bounds, Color fill, Color border) {
+    Rectangle shadow = {bounds.x + 2.0f, bounds.y + 3.0f, bounds.width, bounds.height};
+    DrawRectangleRounded(shadow, 0.14f, 6, Fade((Color){55, 67, 62, 255}, 0.10f));
+    DrawRectangleRounded(bounds, 0.14f, 6, fill);
+    DrawRectangleRoundedLinesEx(bounds, 0.14f, 6, 1.0f, border);
+}
+
+static void draw_gradient_button(Rectangle bounds, int hovered) {
+    Color left = hovered ? (Color){80, 104, 205, 255} : (Color){72, 91, 190, 255};
+    Color right = hovered ? (Color){126, 91, 199, 255} : (Color){110, 76, 184, 255};
+    int x;
+    DrawRectangleRounded((Rectangle){bounds.x + 2, bounds.y + 4, bounds.width, bounds.height},
+                         0.20f, 7, Fade((Color){48, 48, 86, 255}, 0.20f));
+    DrawRectangleRounded(bounds, 0.20f, 7, left);
+    for (x = 6; x < (int)bounds.width - 6; ++x) {
+        float factor = (float)x / bounds.width;
+        DrawLine((int)bounds.x + x, (int)bounds.y + 4,
+                 (int)bounds.x + x, (int)(bounds.y + bounds.height - 5),
+                 ColorLerp(left, right, factor));
+    }
+    DrawRectangleRoundedLinesEx(bounds, 0.20f, 7, 1.0f, Fade(WHITE, 0.28f));
 }
 
 static void draw_text_fit(const char *text, int x, int y, int max_width,
@@ -562,20 +816,20 @@ static void draw_navigation_panel(const Graph *graph, const RendererState *state
     const Node *start = graph_get_node(graph, state->start_id);
     const Node *goal = graph_get_node(graph, state->goal_id);
     int y;
-    DrawRectangle(0, 0, NAV_WIDTH, WINDOW_HEIGHT, (Color){249, 250, 246, 255});
-    DrawLine(NAV_WIDTH - 1, 0, NAV_WIDTH - 1, WINDOW_HEIGHT,
-             (Color){196, 205, 198, 255});
+    DrawRectangle(0, 0, NAV_WIDTH, WINDOW_HEIGHT, COLOR_MAP_SKY);
+    draw_ui_card((Rectangle){10, 10, NAV_WIDTH - 20, WINDOW_HEIGHT - 20},
+                 Fade(COLOR_PANEL, 0.98f), (Color){218, 226, 220, 255});
     DrawText("SCU JIANG'AN", 20, 20, 13, (Color){76, 116, 100, 255});
     DrawText("Campus Navigation", 20, 42, 24, (Color){33, 66, 57, 255});
     DrawText("START", 20, 91, 11, (Color){98, 111, 105, 255});
-    DrawRectangleRounded((Rectangle){20, 108, 260, 48}, 0.12f, 5,
-                         (Color){235, 244, 236, 255});
+    draw_ui_card((Rectangle){20, 108, 260, 48}, (Color){241, 248, 242, 255},
+                 (Color){211, 226, 214, 255});
     DrawCircle(38, 132, 6, (Color){48, 170, 99, 255});
     draw_text_fit(start ? start->name : "Click a place on the map", 53, 123, 215, 15,
                   (Color){44, 63, 57, 255});
     DrawText("DESTINATION", 20, 169, 11, (Color){98, 111, 105, 255});
-    DrawRectangleRounded((Rectangle){20, 186, 260, 48}, 0.12f, 5,
-                         (Color){249, 236, 232, 255});
+    draw_ui_card((Rectangle){20, 186, 260, 48}, (Color){252, 242, 239, 255},
+                 (Color){235, 216, 211, 255});
     DrawCircle(38, 210, 6, (Color){221, 78, 69, 255});
     draw_text_fit(goal ? goal->name : "Right-click a destination", 53, 201, 215, 15,
                   (Color){44, 63, 57, 255});
@@ -585,15 +839,18 @@ static void draw_navigation_panel(const Graph *graph, const RendererState *state
         for (algorithm = 1; algorithm <= 2; ++algorithm) {
             Rectangle button = algorithm_button(algorithm);
             int active = state->algorithm == algorithm;
-            DrawRectangleRounded(button, 0.14f, 5,
-                                 active ? (Color){55, 112, 93, 255}
-                                        : (Color){229, 234, 228, 255});
+            int hovered = CheckCollisionPointRec(GetMousePosition(), button);
+            Color idle = hovered ? (Color){231, 237, 232, 255}
+                                 : (Color){238, 241, 237, 255};
+            draw_ui_card(button, active ? COLOR_ACCENT : idle,
+                         active ? COLOR_ACCENT : (Color){220, 226, 220, 255});
             DrawText(algorithm == 1 ? "Dijkstra" : "A*",
                      (int)button.x + (algorithm == 1 ? 31 : 52), (int)button.y + 9,
                      14, active ? RAYWHITE : (Color){69, 82, 77, 255});
         }
     }
-    DrawRectangleRounded(navigate_button(), 0.12f, 5, (Color){230, 139, 48, 255});
+    draw_gradient_button(navigate_button(),
+                         CheckCollisionPointRec(GetMousePosition(), navigate_button()));
     DrawText("Start navigation", 87, 322, 16, RAYWHITE);
     DrawText(state->message, 20, 367, 13, (Color){77, 99, 90, 255});
     DrawLine(20, 396, 280, 396, (Color){218, 224, 217, 255});
@@ -634,7 +891,9 @@ static void draw_navigation_panel(const Graph *graph, const RendererState *state
 static void draw_search_ui(const Graph *graph, const RendererState *state) {
     Rectangle box = search_box();
     const Node *match = graph_get_node(graph, state->search_match_id);
-    DrawRectangleRounded(box, 0.15f, 6, (Color){255, 255, 252, 245});
+    DrawRectangleRounded((Rectangle){box.x + 2, box.y + 3, box.width, box.height},
+                         0.15f, 6, Fade((Color){49, 66, 59, 255}, 0.13f));
+    DrawRectangleRounded(box, 0.15f, 6, (Color){255, 255, 253, 248});
     DrawRectangleRoundedLinesEx(box, 0.15f, 6, 1.0f,
                                 state->search_focus ? (Color){67, 128, 107, 255}
                                                     : (Color){186, 198, 190, 255});
@@ -647,33 +906,41 @@ static void draw_search_ui(const Graph *graph, const RendererState *state) {
                                     : (Color){132, 143, 138, 255});
     if (state->search_focus && match != NULL) {
         Rectangle result = {box.x, box.y + box.height + 5, box.width, 38};
-        DrawRectangleRounded(result, 0.12f, 5, (Color){255, 255, 252, 248});
+        draw_ui_card(result, COLOR_CARD, (Color){210, 220, 214, 255});
         DrawText(TextFormat("[%02d] %s", match->id, match->name),
                  (int)result.x + 12, (int)result.y + 10, 14, (Color){49, 72, 62, 255});
     }
 }
 
 static void draw_legend(void) {
-    int x = WINDOW_WIDTH - 184;
-    int y = 18;
+    Rectangle panel = legend_panel();
+    int x = (int)panel.x;
+    int y = (int)panel.y;
     const char *labels[] = {"Teaching", "Dorm / dining", "Green space", "Water", "Road", "Route"};
-    Color colors[] = {{124,157,181,255}, {224,164,98,255}, {190,217,179,255},
-                      {112,184,218,255}, {194,199,194,255}, {242,143,55,255}};
+    Color colors[] = {{118,148,169,255}, {204,137,78,255}, {195,216,184,255},
+                      {112,188,224,255}, {244,245,239,255}, {239,126,40,255}};
     int i;
-    DrawRectangleRounded((Rectangle){(float)x, (float)y, 164, 190}, 0.06f, 6,
-                         (Color){255, 255, 252, 238});
-    DrawText("MAP LEGEND", x + 14, y + 14, 12, (Color){73, 91, 83, 255});
+    DrawRectangleRounded((Rectangle){panel.x + 2, panel.y + 3, panel.width, panel.height},
+                         0.10f, 6, Fade((Color){52, 64, 60, 255}, 0.12f));
+    DrawRectangleRounded(panel, 0.10f, 6, (Color){255, 255, 253, 224});
+    DrawRectangleRoundedLinesEx(panel, 0.10f, 6, 1.0f,
+                                Fade((Color){115, 129, 122, 255}, 0.32f));
+    DrawText("MAP LEGEND", x + 12, y + 12, 11, (Color){73, 91, 83, 255});
     for (i = 0; i < 6; ++i) {
-        DrawRectangle(x + 15, y + 43 + i * 23, 16, 9, colors[i]);
-        DrawText(labels[i], x + 41, y + 39 + i * 23, 13, (Color){58, 70, 66, 255});
+        DrawRectangle(x + 13, y + 38 + i * 20, 14, 8, colors[i]);
+        DrawText(labels[i], x + 35, y + 34 + i * 20, 12, (Color){58, 70, 66, 255});
     }
 }
 
 static void draw_tool_button(int index, const char *label, int active) {
     Rectangle button = tool_button(index);
+    int hovered = CheckCollisionPointRec(GetMousePosition(), button);
+    DrawRectangleRounded((Rectangle){button.x + 2, button.y + 2, button.width, button.height},
+                         0.16f, 5, Fade((Color){45, 58, 53, 255}, 0.13f));
     DrawRectangleRounded(button, 0.16f, 5,
                          active ? (Color){57, 111, 94, 255}
-                                : (Color){255, 255, 252, 240});
+                                : hovered ? (Color){239, 245, 241, 250}
+                                          : (Color){255, 255, 252, 240});
     DrawRectangleRoundedLinesEx(button, 0.16f, 5, 1.0f, (Color){174, 187, 178, 255});
     DrawText(label, (int)(button.x + button.width * 0.5f - MeasureText(label, 16) * 0.5f),
              (int)button.y + 10, 16, active ? RAYWHITE : (Color){55, 72, 64, 255});
@@ -782,7 +1049,7 @@ void renderer3d_run(const Graph *graph) {
         Vector2 mouse = GetMousePosition();
         int over_map = mouse.x >= NAV_WIDTH && mouse.x < WINDOW_WIDTH;
         int map_ui_hit = CheckCollisionPointRec(mouse, search_box()) ||
-                         CheckCollisionPointRec(mouse, (Rectangle){WINDOW_WIDTH - 184, 18, 164, 190});
+                         CheckCollisionPointRec(mouse, legend_panel());
         int camera_changed = 0;
         int picked;
         int i;
@@ -818,8 +1085,18 @@ void renderer3d_run(const Graph *graph) {
 
         update_search(graph, &state);
         if (state.search_focus && IsKeyPressed(KEY_ENTER) && state.search_match_id >= 0) {
+            const Node *match = graph_get_node(graph, state.search_match_id);
             if (state.start_id < 0) state.start_id = state.search_match_id;
             else state.goal_id = state.search_match_id;
+            if (match != NULL) {
+                Vector3 target = node_position(match, &layout, 0.0f);
+                Vector3 offset = Vector3Subtract(camera.position, camera.target);
+                camera.target = target;
+                camera.position = Vector3Add(target, offset);
+                if (camera.projection == CAMERA_ORTHOGRAPHIC) {
+                    camera.fovy = fminf(camera.fovy, layout.overview_size * 0.52f);
+                }
+            }
             state.search_focus = 0;
             state.has_result = 0;
             snprintf(state.message, sizeof(state.message), "Press Start navigation");
@@ -863,19 +1140,21 @@ void renderer3d_run(const Graph *graph) {
         update_animation(&state);
 
         BeginTextureMode(map_target);
-        ClearBackground((Color){213, 226, 219, 255});
+        ClearBackground(COLOR_MAP_SKY);
         BeginMode3D(camera);
         draw_environment(&layout);
         draw_roads(graph, &layout, &state);
         for (i = 0; i < graph->node_count; ++i) draw_node(&graph->nodes[i], &layout, &state);
         draw_trees(&layout);
         draw_search_markers(graph, &layout, &state);
+        draw_selection_markers(graph, &layout, &state);
         EndMode3D();
         draw_labels(graph, &layout, &camera, &state);
+        draw_screen_selection_markers(graph, &layout, &camera, &state);
         EndTextureMode();
 
         BeginDrawing();
-        ClearBackground((Color){231, 237, 232, 255});
+        ClearBackground(COLOR_MAP_SKY);
         DrawTextureRec(map_target.texture,
                        (Rectangle){0, 0, (float)MAP_WIDTH, -(float)MAP_HEIGHT},
                        (Vector2){NAV_WIDTH, 0}, WHITE);

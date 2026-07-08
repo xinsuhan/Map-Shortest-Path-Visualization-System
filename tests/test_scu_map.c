@@ -24,10 +24,16 @@ int main(void) {
     PathResult astar_result;
     const int route_one[] = {1, 0, 27, 30, 31, 32, 13};
     const int route_three[] = {4, 27, 28, 29, 7, 10};
+    int junction_count = 0;
+    int i;
 
     assert(storage_load_map(PROJECT_DATA_DIR "/map.txt", &graph) == MSP_OK);
-    assert(graph.node_count == 35);
-    assert(graph.edge_count == 73);
+    assert(graph.node_count == 39);
+    assert(graph.edge_count == 80);
+    for (i = 0; i < graph.node_count; ++i) {
+        if (graph.nodes[i].type == NODE_JUNCTION) junction_count++;
+    }
+    assert(junction_count == 12);
 
     assert(dijkstra_find_path(&graph, 1, 13, &dijkstra_result) == MSP_OK);
     assert(astar_find_path(&graph, 1, 13, &astar_result) == MSP_OK);

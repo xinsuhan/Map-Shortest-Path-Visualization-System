@@ -188,12 +188,13 @@ cmake --build build-3d
 - `D` / `A` 切换 Dijkstra 与 A*
 - `Enter` 开始搜索，`Space` 暂停或继续动画
 - `1` / `2` / `3` 调整动画速度
-- `WASD`、鼠标和滚轮控制相机，`Home` 恢复默认视角
+- `F1` / `F2` / `F3` 或右侧按钮切换全览、导航和路径视角
+- 方向键与滚轮平移、缩放相机，`Home` 恢复全览视角
 - `R` 重置选择，`Esc` 返回控制台
 
 使用 Ninja、MinGW Makefiles 等单配置生成器时，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
 
-程序默认加载 `data/map.txt`，其中包含四川大学江安校区的 35 个节点（含 8 个道路路口）和 73 条双向道路。节点数据可标记为 `LANDMARK`、`JUNCTION`、`LAKE`、`SQUARE` 或 `GATE`，并携带宽度、深度和高度信息；旧版四字段节点格式仍可继续加载。也可以指定其他地图文件：
+程序默认加载 `data/map.txt`，其中包含四川大学江安校区的 39 个节点（含 12 个道路路口）和 80 条双向道路。节点数据可标记为 `LANDMARK`、`JUNCTION`、`LAKE`、`SQUARE` 或 `GATE`，并携带宽度、深度和高度信息；旧版四字段节点格式仍可继续加载。也可以指定其他地图文件：
 
 ```bash
 ./build/map_shortest_path path/to/map.txt

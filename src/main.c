@@ -186,7 +186,11 @@ int main(int argc, char *argv[]) {
             renderer3d_run(&graph);
 #endif
         } else {
+#ifdef MSP_HAS_3D
+            printf("Unknown option: choose a number from 0 to 8.\n");
+#else
             printf("Unknown option: choose a number from 0 to 7.\n");
+#endif
         }
         wait_for_enter();
     }

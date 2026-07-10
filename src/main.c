@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MSP_PATH_LENGTH 1024
+
 typedef struct {
     int start_place_id;
     int goal_place_id;
@@ -192,14 +194,70 @@ static int direct_3d_requested(int argc, char *argv[]) {
     return argc == 2 && strcmp(argv[1], "--3d") == 0;
 }
 
+static void executable_directory(const char *argv0, char *directory, size_t size) {
+    const char *slash;
+    const char *backslash;
+    const char *separator;
+    size_t length;
+    if (directory == NULL || size == 0) return;
+    snprintf(directory, size, ".");
+    if (argv0 == NULL) return;
+    slash = strrchr(argv0, '/');
+    backslash = strrchr(argv0, '\\');
+    separator = slash;
+    if (backslash != NULL && (separator == NULL || backslash > separator)) {
+        separator = backslash;
+    }
+    if (separator == NULL) return;
+    length = (size_t)(separator - argv0);
+    if (length == 0) length = 1;
+    if (length >= size) length = size - 1;
+    memcpy(directory, argv0, length);
+    directory[length] = '\0';
+}
+
+static int curved_data_exists(const char *directory) {
+    char path[MSP_PATH_LENGTH];
+    FILE *file;
+    int written = snprintf(path, sizeof(path), "%s/data/curved/nodes.csv", directory);
+    if (written < 0 || (size_t)written >= sizeof(path)) return 0;
+    file = fopen(path, "r");
+    if (file == NULL) return 0;
+    fclose(file);
+    return 1;
+}
+
+static int curved_data_path(char *path, size_t size, const char *base,
+                            const char *file_name) {
+    int written = snprintf(path, size, "%s/data/curved/%s", base, file_name);
+    return written >= 0 && (size_t)written < size;
+}
+
+static int load_default_data(const char *argv0, Graph *graph, PlaceStore *places) {
+    char executable_dir[MSP_PATH_LENGTH];
+    char nodes[MSP_PATH_LENGTH];
+    char edges[MSP_PATH_LENGTH];
+    char geometry[MSP_PATH_LENGTH];
+    char pois[MSP_PATH_LENGTH];
+    const char *base = ".";
+
+    executable_directory(argv0, executable_dir, sizeof(executable_dir));
+    if (curved_data_exists(executable_dir)) base = executable_dir;
+    if (!curved_data_path(nodes, sizeof(nodes), base, "nodes.csv") ||
+        !curved_data_path(edges, sizeof(edges), base, "edges_curved.csv") ||
+        !curved_data_path(geometry, sizeof(geometry), base,
+                          "edge_geometry_points.csv") ||
+        !curved_data_path(pois, sizeof(pois), base, "pois.csv")) {
+        return MSP_ERROR_CAPACITY;
+    }
+    return storage_load_curved_campus(nodes, edges, geometry, pois, graph, places);
+}
+
 static int load_application_data(int argc, char *argv[], Graph *graph,
                                  PlaceStore *places) {
     int status;
     if (argc == 1 || direct_3d_requested(argc, argv)) {
-        return storage_load_curved_campus(
-            "data/curved/nodes.csv", "data/curved/edges_curved.csv",
-            "data/curved/edge_geometry_points.csv", "data/curved/pois.csv",
-            graph, places);
+        return load_default_data(argv[0], graph, places);
     }
     places->place_count = 0;
     if (argc >= 3) {

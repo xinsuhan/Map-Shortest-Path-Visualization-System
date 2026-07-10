@@ -1,0 +1,7 @@
+﻿id,name,x,y,category,nearest_node
+POI01,明远湖,690,645,lake,L03
+POI02,艺术学院,860,760,teaching,S04
+POI03,体育场,1370,625,sports,P05
+POI04,西区学生宿舍,390,880,dormitory,D11
+POI05,东区学生宿舍,1160,340,dormitory,T04
+POI06,东区教学区,1630,470,teaching,E05

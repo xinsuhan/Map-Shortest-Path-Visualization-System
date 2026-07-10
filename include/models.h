@@ -34,11 +34,18 @@ typedef enum {
 } RoadType;
 
 typedef struct {
+    double x;
+    double y;
+} MapPoint;
+
+typedef struct {
     int from_id;
     int to_id;
     double weight;
     RoadType type;
     int walkable;
+    int geometry_start;
+    int geometry_count;
 } Edge;
 
 typedef struct {
@@ -59,6 +66,9 @@ typedef struct {
     int node_count;
     Edge edges[MSP_MAX_EDGES];
     int edge_count;
+    MapPoint geometry_points[MSP_MAX_GEOMETRY_POINTS];
+    int geometry_point_count;
+    int weights_in_meters;
     double adjacency[MSP_MAX_NODES][MSP_MAX_NODES];
 } Graph;
 

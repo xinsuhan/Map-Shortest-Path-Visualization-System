@@ -46,7 +46,7 @@ endif()
 
 include(CTest)
 if(BUILD_TESTING)
-    foreach(test_name graph dijkstra astar storage scu_map input edge_cases path_result)
+    foreach(test_name graph dijkstra astar storage scu_map curved_campus input edge_cases path_result)
         add_executable(test_${test_name} tests/test_${test_name}.c)
         target_link_libraries(test_${test_name} PRIVATE shortest_path_core)
         add_test(NAME ${test_name} COMMAND test_${test_name})
@@ -54,5 +54,7 @@ if(BUILD_TESTING)
     target_compile_definitions(test_storage PRIVATE
         TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/test_data")
     target_compile_definitions(test_scu_map PRIVATE
+        PROJECT_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+    target_compile_definitions(test_curved_campus PRIVATE
         PROJECT_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 endif()

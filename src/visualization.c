@@ -17,10 +17,8 @@
 
 #define CANVAS_WIDTH 78
 #define CANVAS_HEIGHT 26
-#define MAP_X_SCALE 5
-#define MAP_Y_SCALE 2
-#define MAP_X_OFFSET 2
-#define MAP_Y_OFFSET 1
+#define MAP_X_PADDING 3
+#define MAP_Y_PADDING 1
 
 #define COLOR_RESET "\033[0m"
 #define COLOR_ROAD "\033[90m"
@@ -37,12 +35,61 @@ typedef struct {
     int node_ids[CANVAS_HEIGHT][CANVAS_WIDTH];
 } ConsoleCanvas;
 
-static int canvas_x(double logical_x) {
-    return MAP_X_OFFSET + (int)((logical_x - 2.0) * MAP_X_SCALE + 0.5);
+typedef struct {
+    double min_x;
+    double min_y;
+    double scale_x;
+    double scale_y;
+    int single_x;
+    int single_y;
+} CanvasTransform;
+
+static CanvasTransform canvas_build_transform(const Graph *graph) {
+    CanvasTransform transform = {0};
+    double max_x;
+    double max_y;
+    int i;
+
+    if (graph == NULL || graph->node_count <= 0) {
+        transform.single_x = 1;
+        transform.single_y = 1;
+        return transform;
+    }
+
+    transform.min_x = max_x = graph->nodes[0].x;
+    transform.min_y = max_y = graph->nodes[0].y;
+    for (i = 1; i < graph->node_count; ++i) {
+        if (graph->nodes[i].x < transform.min_x) transform.min_x = graph->nodes[i].x;
+        if (graph->nodes[i].x > max_x) max_x = graph->nodes[i].x;
+        if (graph->nodes[i].y < transform.min_y) transform.min_y = graph->nodes[i].y;
+        if (graph->nodes[i].y > max_y) max_y = graph->nodes[i].y;
+    }
+
+    transform.single_x = max_x <= transform.min_x;
+    transform.single_y = max_y <= transform.min_y;
+    if (!transform.single_x) {
+        transform.scale_x =
+            (double)(CANVAS_WIDTH - 1 - MAP_X_PADDING * 2) /
+            (max_x - transform.min_x);
+    }
+    if (!transform.single_y) {
+        transform.scale_y =
+            (double)(CANVAS_HEIGHT - 1 - MAP_Y_PADDING * 2) /
+            (max_y - transform.min_y);
+    }
+    return transform;
 }
 
-static int canvas_y(double logical_y) {
-    return MAP_Y_OFFSET + (int)((12.0 - logical_y) * MAP_Y_SCALE + 0.5);
+static int canvas_x(const CanvasTransform *transform, double logical_x) {
+    if (transform->single_x) return CANVAS_WIDTH / 2;
+    return MAP_X_PADDING +
+           (int)((logical_x - transform->min_x) * transform->scale_x + 0.5);
+}
+
+static int canvas_y(const CanvasTransform *transform, double logical_y) {
+    if (transform->single_y) return CANVAS_HEIGHT / 2;
+    return MAP_Y_PADDING +
+           (int)((logical_y - transform->min_y) * transform->scale_y + 0.5);
 }
 
 static int in_canvas(int x, int y) {
@@ -139,9 +186,11 @@ static void canvas_write_text(ConsoleCanvas *canvas, int x, int y, const char *t
 }
 
 static void canvas_draw_edge(ConsoleCanvas *canvas, const Graph *graph, const Edge *edge,
+                             const CanvasTransform *transform,
                              const PathResult *final_result) {
     const Node *from = graph_get_node(graph, edge->from_id);
     const Node *to = graph_get_node(graph, edge->to_id);
+    int geometry_valid;
     int is_path;
     int x0;
     int y0;
@@ -152,22 +201,54 @@ static void canvas_draw_edge(ConsoleCanvas *canvas, const Graph *graph, const Ed
     if (!edge->walkable || from == NULL || to == NULL) {
         return;
     }
-    x0 = canvas_x(from->x);
-    y0 = canvas_y(from->y);
-    x1 = canvas_x(to->x);
-    y1 = canvas_y(to->y);
     is_path = result_contains_edge(final_result, edge->from_id, edge->to_id);
-    canvas_draw_line(canvas, x0, y0, x1, y1, is_path ? '#' : '.', is_path);
+    geometry_valid = edge->geometry_count >= 2 && edge->geometry_start >= 0 &&
+                     edge->geometry_start <= graph->geometry_point_count &&
+                     edge->geometry_count <=
+                         graph->geometry_point_count - edge->geometry_start;
 
-    snprintf(weight, sizeof(weight), "%.1f", edge->weight);
-    canvas_write_text(canvas, (x0 + x1) / 2 - 1, (y0 + y1) / 2, weight);
+    if (geometry_valid) {
+        int point_index;
+        const MapPoint *first = &graph->geometry_points[edge->geometry_start];
+        const MapPoint *middle =
+            &graph->geometry_points[edge->geometry_start + edge->geometry_count / 2];
+        x0 = canvas_x(transform, first->x);
+        y0 = canvas_y(transform, first->y);
+        for (point_index = 1; point_index < edge->geometry_count; ++point_index) {
+            const MapPoint *point =
+                &graph->geometry_points[edge->geometry_start + point_index];
+            x1 = canvas_x(transform, point->x);
+            y1 = canvas_y(transform, point->y);
+            canvas_draw_line(canvas, x0, y0, x1, y1,
+                             is_path ? '#' : '.', is_path);
+            x0 = x1;
+            y0 = y1;
+        }
+        x0 = canvas_x(transform, middle->x);
+        y0 = canvas_y(transform, middle->y);
+    } else {
+        x0 = canvas_x(transform, from->x);
+        y0 = canvas_y(transform, from->y);
+        x1 = canvas_x(transform, to->x);
+        y1 = canvas_y(transform, to->y);
+        canvas_draw_line(canvas, x0, y0, x1, y1,
+                         is_path ? '#' : '.', is_path);
+        x0 = (x0 + x1) / 2;
+        y0 = (y0 + y1) / 2;
+    }
+
+    if (graph->edge_count <= 50) {
+        snprintf(weight, sizeof(weight), "%.1f", edge->weight);
+        canvas_write_text(canvas, x0 - 1, y0, weight);
+    }
 }
 
 static void canvas_draw_node(ConsoleCanvas *canvas, const Node *node, int start_id, int goal_id,
                              const int visited_order[], int visited_count,
-                             int current_id, const PathResult *final_result) {
-    int x = canvas_x(node->x);
-    int y = canvas_y(node->y);
+                             int current_id, const CanvasTransform *transform,
+                             const PathResult *final_result) {
+    int x = canvas_x(transform, node->x);
+    int y = canvas_y(transform, node->y);
     char label[16];
     int i;
     int show_node = node->visible || node->id == start_id || node->id == goal_id ||
@@ -250,6 +331,7 @@ void visualization_draw_map(const Graph *graph, int start_id, int goal_id,
                             const int visited_order[], int visited_count,
                             int current_id, const PathResult *final_result) {
     ConsoleCanvas canvas;
+    CanvasTransform transform;
     int x;
     int y;
     int i;
@@ -257,13 +339,15 @@ void visualization_draw_map(const Graph *graph, int start_id, int goal_id,
     if (graph == NULL) {
         return;
     }
+    transform = canvas_build_transform(graph);
     canvas_init(&canvas);
     for (i = 0; i < graph->edge_count; ++i) {
-        canvas_draw_edge(&canvas, graph, &graph->edges[i], final_result);
+        canvas_draw_edge(&canvas, graph, &graph->edges[i], &transform, final_result);
     }
     for (i = 0; i < graph->node_count; ++i) {
         canvas_draw_node(&canvas, &graph->nodes[i], start_id, goal_id,
-                         visited_order, visited_count, current_id, final_result);
+                         visited_order, visited_count, current_id, &transform,
+                         final_result);
     }
 
     printf("SCU Jiang'an Campus - Shortest Path Visualization\n");
@@ -296,12 +380,24 @@ void visualization_draw_map(const Graph *graph, int start_id, int goal_id,
     for (x = 0; x < CANVAS_WIDTH; ++x) putchar('-');
     printf("+\n");
 
-    for (i = 0; i < graph->node_count; i += 2) {
-        printf("[%02d] %-24s", graph->nodes[i].id, graph->nodes[i].name);
-        if (i + 1 < graph->node_count) {
-            printf("[%02d] %-24s", graph->nodes[i + 1].id, graph->nodes[i + 1].name);
+    if (graph->node_count <= 60) {
+        for (i = 0; i < graph->node_count; i += 2) {
+            printf("[%02d] %-24s", graph->nodes[i].id, graph->nodes[i].name);
+            if (i + 1 < graph->node_count) {
+                printf("[%02d] %-24s", graph->nodes[i + 1].id, graph->nodes[i + 1].name);
+            }
+            putchar('\n');
         }
-        putchar('\n');
+    } else {
+        int shown = 0;
+        printf("Visible locations:\n");
+        for (i = 0; i < graph->node_count; ++i) {
+            if (!graph->nodes[i].visible) continue;
+            printf("[%02d] %-24s", graph->nodes[i].id, graph->nodes[i].name);
+            shown++;
+            if (shown % 2 == 0) putchar('\n');
+        }
+        if (shown % 2 != 0) putchar('\n');
     }
 }
 
@@ -371,7 +467,13 @@ void visualization_print_path(const Graph *graph, const PathResult *result) {
         printf("%s%s", node != NULL ? node->name : "?",
                i + 1 < result->path_length ? " -> " : "\n");
     }
-    printf("Total distance: %.2f\n", result->total_distance);
-    printf("Estimated walking time: %.0f minutes\n",
-           result->total_distance > 0.8 ? result->total_distance * 1.25 : 1.0);
+    if (graph->weights_in_meters) {
+        printf("Total distance: %.1f m\n", result->total_distance);
+        printf("Estimated walking time: %.1f minutes (80 m/min)\n",
+               result->total_distance / 80.0);
+    } else {
+        printf("Total distance: %.2f\n", result->total_distance);
+        printf("Estimated walking time: %.0f minutes\n",
+               result->total_distance > 0.8 ? result->total_distance * 1.25 : 1.0);
+    }
 }

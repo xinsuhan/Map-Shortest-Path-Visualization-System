@@ -10,6 +10,7 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
 
 typedef struct {
     int start_place_id;
@@ -187,11 +188,30 @@ static void run_visualization(const Graph *graph, const AppSettings *settings) {
                               settings->goal_id, settings->delay_ms);
 }
 
-static int load_map_from_arguments(int argc, char *argv[], Graph *graph) {
-    if (argc >= 3) {
-        return storage_load_graph(argv[1], argv[2], graph);
+static int direct_3d_requested(int argc, char *argv[]) {
+    return argc == 2 && strcmp(argv[1], "--3d") == 0;
+}
+
+static int load_application_data(int argc, char *argv[], Graph *graph,
+                                 PlaceStore *places) {
+    int status;
+    if (argc == 1 || direct_3d_requested(argc, argv)) {
+        return storage_load_curved_campus(
+            "data/curved/nodes.csv", "data/curved/edges_curved.csv",
+            "data/curved/edge_geometry_points.csv", "data/curved/pois.csv",
+            graph, places);
     }
-    return storage_load_map(argc == 2 ? argv[1] : "data/map.txt", graph);
+    places->place_count = 0;
+    if (argc >= 3) {
+        status = storage_load_graph(argv[1], argv[2], graph);
+    } else {
+        status = storage_load_map(argv[1], graph);
+    }
+    if (status != MSP_OK) return status;
+    if (argc >= 4) {
+        return storage_load_places(argv[3], graph, places);
+    }
+    return MSP_OK;
 }
 
 int main(int argc, char *argv[]) {
@@ -200,23 +220,26 @@ int main(int argc, char *argv[]) {
     AppSettings settings;
     int choice;
     int load_status;
+    int open_3d_directly = direct_3d_requested(argc, argv);
 
     visualization_initialize_console();
-    load_status = load_map_from_arguments(argc, argv, &graph);
+    load_status = load_application_data(argc, argv, &graph, &places);
     if (load_status != MSP_OK) {
         fprintf(stderr, "Failed to load map data (status %d).\n", load_status);
         return 1;
     }
-    places.place_count = 0;
-    if (argc == 1 || argc >= 4) {
-        load_status = storage_load_places(argc >= 4 ? argv[3] : "data/places.csv",
-                                          &graph, &places);
-        if (load_status != MSP_OK) {
-            fprintf(stderr, "Failed to load place data (status %d).\n", load_status);
-            return 1;
-        }
-    }
     reset_settings(&settings);
+
+    if (open_3d_directly) {
+#ifdef MSP_HAS_3D
+        renderer3d_run(&graph, &places);
+        return 0;
+#else
+        fprintf(stderr, "This build does not include 3D support. Reconfigure with "
+                        "-DMSP_ENABLE_3D=ON.\n");
+        return 1;
+#endif
+    }
 
     for (;;) {
         show_main_screen(&graph, &places, &settings);

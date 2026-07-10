@@ -21,6 +21,8 @@
 #define MAP_HEIGHT WINDOW_HEIGHT
 #define RENDER_SCALE_X 2.20f
 #define RENDER_SCALE_Z 1.78f
+#define TARGET_WORLD_WIDTH 30.0f
+#define TARGET_WORLD_DEPTH 20.0f
 #define BUILDING_SCALE 0.76f
 #define HEIGHT_SCALE 0.42f
 #define ROAD_HEIGHT 0.035f
@@ -60,11 +62,14 @@ typedef struct {
 typedef struct {
     float center_x;
     float center_z;
+    float scale_x;
+    float scale_z;
     float min_x;
     float max_x;
     float min_z;
     float max_z;
     float overview_size;
+    int legacy_decorations;
 } SceneLayout;
 
 typedef struct {
@@ -130,19 +135,31 @@ static SceneLayout build_scene_layout(const Graph *graph) {
     }
     layout.center_x = (float)((min_x + max_x) * 0.5);
     layout.center_z = (float)((min_y + max_y) * 0.5);
-    layout.min_x = (float)(min_x - layout.center_x) * RENDER_SCALE_X;
-    layout.max_x = (float)(max_x - layout.center_x) * RENDER_SCALE_X;
-    layout.min_z = (float)(min_y - layout.center_z) * RENDER_SCALE_Z;
-    layout.max_z = (float)(max_y - layout.center_z) * RENDER_SCALE_Z;
+    layout.legacy_decorations = max_x - min_x <= 50.0 && max_y - min_y <= 50.0;
+    if (layout.legacy_decorations) {
+        layout.scale_x = RENDER_SCALE_X;
+        layout.scale_z = RENDER_SCALE_Z;
+    } else {
+        layout.scale_x = max_x > min_x
+                             ? TARGET_WORLD_WIDTH / (float)(max_x - min_x)
+                             : 1.0f;
+        layout.scale_z = max_y > min_y
+                             ? TARGET_WORLD_DEPTH / (float)(max_y - min_y)
+                             : 1.0f;
+    }
+    layout.min_x = (float)(min_x - layout.center_x) * layout.scale_x;
+    layout.max_x = (float)(max_x - layout.center_x) * layout.scale_x;
+    layout.min_z = (float)(min_y - layout.center_z) * layout.scale_z;
+    layout.max_z = (float)(max_y - layout.center_z) * layout.scale_z;
     layout.overview_size =
         fmaxf(layout.max_z - layout.min_z, (layout.max_x - layout.min_x) / 1.34f) * 1.22f;
     return layout;
 }
 
-static Vector3 world_position(float x, float y, const SceneLayout *layout, float height) {
-    return (Vector3){(x - layout->center_x) * RENDER_SCALE_X,
+static Vector3 world_position(double x, double y, const SceneLayout *layout, float height) {
+    return (Vector3){((float)x - layout->center_x) * layout->scale_x,
                      height,
-                     (y - layout->center_z) * RENDER_SCALE_Z};
+                     ((float)y - layout->center_z) * layout->scale_z};
 }
 
 static Vector3 node_position(const Node *node, const SceneLayout *layout, float height) {
@@ -156,29 +173,22 @@ static float node_render_height(const Node *node) {
     return clamp_float(node->height * HEIGHT_SCALE, 0.12f, 0.29f);
 }
 
-static float node_render_width(const Node *node) {
-    return fmaxf(node->width * RENDER_SCALE_X * BUILDING_SCALE, 0.24f);
+static float node_render_width(const Node *node, const SceneLayout *layout) {
+    return fmaxf(node->width * layout->scale_x * BUILDING_SCALE, 0.24f);
 }
 
-static float node_render_depth(const Node *node) {
-    return fmaxf(node->depth * RENDER_SCALE_Z * BUILDING_SCALE, 0.24f);
+static float node_render_depth(const Node *node, const SceneLayout *layout) {
+    return fmaxf(node->depth * layout->scale_z * BUILDING_SCALE, 0.24f);
 }
 
-static int result_contains_node(const PathResult *result, int node_id) {
-    int i;
-    if (result == NULL || !result->found) return 0;
-    for (i = 0; i < result->path_length; ++i) {
-        if (result->path[i] == node_id) return 1;
-    }
-    return 0;
-}
-
-static int result_contains_edge(const PathResult *result, int from_id, int to_id) {
+static int result_edge_direction(const PathResult *result, const Edge *edge) {
     int i;
     if (result == NULL || !result->found) return 0;
     for (i = 0; i + 1 < result->path_length; ++i) {
-        if ((result->path[i] == from_id && result->path[i + 1] == to_id) ||
-            (result->path[i] == to_id && result->path[i + 1] == from_id)) return 1;
+        if (result->path[i] == edge->from_id &&
+            result->path[i + 1] == edge->to_id) return 1;
+        if (result->path[i] == edge->to_id &&
+            result->path[i + 1] == edge->from_id) return -1;
     }
     return 0;
 }
@@ -279,6 +289,17 @@ static void draw_soft_lake(Vector3 center, float width, float depth) {
              width * 0.22f, 0.008f, 0.028f, Fade(WHITE, 0.38f));
 }
 
+static void draw_sports_field(Vector3 center, float width, float depth) {
+    DrawCube((Vector3){center.x, -0.010f, center.z}, width, 0.025f, depth,
+             (Color){146, 185, 139, 255});
+    DrawCubeWires((Vector3){center.x, -0.008f, center.z}, width, 0.028f, depth,
+                  (Color){100, 137, 98, 210});
+    DrawCubeWires((Vector3){center.x, -0.006f, center.z}, width * 0.82f,
+                  0.030f, depth * 0.72f, (Color){244, 240, 219, 220});
+    DrawCube((Vector3){center.x, -0.004f, center.z}, 0.025f, 0.032f,
+             depth * 0.72f, Fade(WHITE, 0.72f));
+}
+
 static void draw_environment(const SceneLayout *layout) {
     int i;
     float ground_width = layout->max_x - layout->min_x + 5.5f;
@@ -287,11 +308,12 @@ static void draw_environment(const SceneLayout *layout) {
               COLOR_MAP_GROUND);
     DrawCubeWires((Vector3){0.0f, -0.025f, 0.0f}, ground_width, 0.02f, ground_depth,
                   Fade((Color){118, 143, 121, 255}, 0.34f));
+    if (!layout->legacy_decorations) return;
     for (i = 0; i < (int)(sizeof(MAP_AREAS) / sizeof(MAP_AREAS[0])); ++i) {
         const MapArea *area = &MAP_AREAS[i];
         Vector3 center = world_position(area->x, area->y, layout, -0.012f);
-        float width = area->width * RENDER_SCALE_X;
-        float depth = area->depth * RENDER_SCALE_Z;
+        float width = area->width * layout->scale_x;
+        float depth = area->depth * layout->scale_z;
         if (area->type == AREA_LAKE) {
             draw_soft_lake(center, width, depth);
             continue;
@@ -335,6 +357,7 @@ static void draw_shrub(float x, float y, const SceneLayout *layout, Color color)
 
 static void draw_trees(const SceneLayout *layout) {
     int i;
+    if (!layout->legacy_decorations) return;
     for (i = 0; i < (int)(sizeof(TREE_POINTS) / sizeof(TREE_POINTS[0])); ++i) {
         if (i == 5 || i == 8 || i == 15 || i == 18) {
             draw_flowering_tree(TREE_POINTS[i].x, TREE_POINTS[i].y, layout);
@@ -397,9 +420,9 @@ static void draw_building_details(const Node *node, Vector3 center,
 
 static void draw_gate(const Node *node, const SceneLayout *layout, Color color) {
     Vector3 center = node_position(node, layout, 0.0f);
-    float width = fmaxf(node_render_width(node), 0.95f);
+    float width = fmaxf(node_render_width(node, layout), 0.95f);
     float height = node_render_height(node);
-    float depth = fmaxf(node_render_depth(node), 0.38f);
+    float depth = fmaxf(node_render_depth(node, layout), 0.38f);
     Vector3 left = {center.x - width * 0.40f, height * 0.5f, center.z};
     Vector3 right = {center.x + width * 0.40f, height * 0.5f, center.z};
     DrawCube(left, width * 0.14f, height, depth, color);
@@ -410,15 +433,24 @@ static void draw_gate(const Node *node, const SceneLayout *layout, Color color) 
 static void draw_node(const Node *node, const SceneLayout *layout,
                       const RendererState *state) {
     Vector3 center = node_position(node, layout, 0.0f);
-    float width = node_render_width(node);
-    float depth = node_render_depth(node);
+    float width = node_render_width(node, layout);
+    float depth = node_render_depth(node, layout);
     float height = node_render_height(node);
     Color color;
     int highlighted = node->id == state->hover_id || node->id == state->search_match_id;
     if (node->type == NODE_JUNCTION || node->type == NODE_BRIDGE ||
         node->type == NODE_ENTRANCE || node->type == NODE_SERVICE) return;
-    if (node->type == NODE_LAKE || node->type == NODE_SQUARE || node->id == 4) return;
-    if (node->id == 16) {
+    if (!layout->legacy_decorations && !node->visible) return;
+    if (node->type == NODE_LAKE) {
+        if (!layout->legacy_decorations) draw_soft_lake(center, width, depth);
+        return;
+    }
+    if (node->type == NODE_SQUARE) {
+        if (!layout->legacy_decorations) draw_sports_field(center, width, depth);
+        return;
+    }
+    if (layout->legacy_decorations && node->id == 4) return;
+    if (layout->legacy_decorations && node->id == 16) {
         DrawCube((Vector3){center.x, 0.012f, center.z}, width, 0.024f, depth,
                  (Color){98, 174, 211, 255});
         DrawCubeWires((Vector3){center.x, 0.014f, center.z}, width, 0.026f, depth,
@@ -508,6 +540,35 @@ static void draw_road_disc(Vector3 position, float width, float height, Color co
                  0.008f, 18, color);
 }
 
+static int edge_has_geometry(const Graph *graph, const Edge *edge) {
+    return edge->geometry_count >= 2 && edge->geometry_start >= 0 &&
+           edge->geometry_start <= graph->geometry_point_count &&
+           edge->geometry_count <= graph->geometry_point_count - edge->geometry_start;
+}
+
+static int edge_render_point_count(const Graph *graph, const Edge *edge) {
+    return edge_has_geometry(graph, edge) ? edge->geometry_count : 2;
+}
+
+static Vector3 edge_render_point(const Graph *graph, const Edge *edge, int index,
+                                 int reverse, const SceneLayout *layout,
+                                 float height) {
+    if (edge_has_geometry(graph, edge)) {
+        int point_index = reverse ? edge->geometry_count - index - 1 : index;
+        const MapPoint *point =
+            &graph->geometry_points[edge->geometry_start + point_index];
+        return world_position(point->x, point->y, layout, height);
+    }
+    {
+        int node_id = reverse
+                          ? (index == 0 ? edge->to_id : edge->from_id)
+                          : (index == 0 ? edge->from_id : edge->to_id);
+        const Node *node = graph_get_node(graph, node_id);
+        return node != NULL ? node_position(node, layout, height)
+                            : (Vector3){0.0f, height, 0.0f};
+    }
+}
+
 static void draw_roads(const Graph *graph, const SceneLayout *layout,
                        const RendererState *state) {
     int i;
@@ -519,55 +580,75 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
             const Edge *edge = &graph->edges[i];
             const Node *from = graph_get_node(graph, edge->from_id);
             const Node *to = graph_get_node(graph, edge->to_id);
-            Vector3 a, b;
+            int point_count;
+            int point_index;
             float width;
             Color border;
             if (!edge->walkable || from == NULL || to == NULL || road_class(edge) != pass) continue;
             width = road_width(edge->type);
             border = pass == 0 ? Fade(COLOR_ROAD_BORDER, 0.50f) : COLOR_ROAD_BORDER;
-            a = node_position(from, layout, ROAD_HEIGHT);
-            b = node_position(to, layout, ROAD_HEIGHT);
-            draw_band(a, b, width + 0.08f, border);
-            draw_road_disc(a, width + 0.08f, ROAD_HEIGHT, border);
-            draw_road_disc(b, width + 0.08f, ROAD_HEIGHT, border);
-            a.y += 0.006f;
-            b.y += 0.006f;
-            draw_band(a, b, width, road_fill(edge->type));
-            draw_road_disc(a, width, ROAD_HEIGHT + 0.006f, road_fill(edge->type));
-            draw_road_disc(b, width, ROAD_HEIGHT + 0.006f, road_fill(edge->type));
+            point_count = edge_render_point_count(graph, edge);
+            for (point_index = 0; point_index + 1 < point_count; ++point_index) {
+                Vector3 a = edge_render_point(graph, edge, point_index, 0,
+                                              layout, ROAD_HEIGHT);
+                Vector3 b = edge_render_point(graph, edge, point_index + 1, 0,
+                                              layout, ROAD_HEIGHT);
+                draw_band(a, b, width + 0.08f, border);
+                draw_road_disc(a, width + 0.08f, ROAD_HEIGHT, border);
+                draw_road_disc(b, width + 0.08f, ROAD_HEIGHT, border);
+                a.y += 0.006f;
+                b.y += 0.006f;
+                draw_band(a, b, width, road_fill(edge->type));
+                draw_road_disc(a, width, ROAD_HEIGHT + 0.006f,
+                               road_fill(edge->type));
+                draw_road_disc(b, width, ROAD_HEIGHT + 0.006f,
+                               road_fill(edge->type));
+            }
         }
     }
     if (!show_path) return;
     for (i = 0; i < graph->edge_count; ++i) {
         const Edge *edge = &graph->edges[i];
-        const Node *from, *to;
-        if (!edge->walkable ||
-            !result_contains_edge(&state->result, edge->from_id, edge->to_id)) continue;
-        from = graph_get_node(graph, edge->from_id);
-        to = graph_get_node(graph, edge->to_id);
-        if (from == NULL || to == NULL) continue;
-        draw_band(node_position(from, layout, PATH_HEIGHT - 0.009f),
-                  node_position(to, layout, PATH_HEIGHT - 0.009f), 0.84f,
-                  Fade(COLOR_ROUTE, 0.20f));
-        draw_band(node_position(from, layout, PATH_HEIGHT - 0.004f),
-                  node_position(to, layout, PATH_HEIGHT - 0.004f), 0.62f,
-                  COLOR_ROUTE_SHADOW);
-        draw_road_disc(node_position(from, layout, PATH_HEIGHT - 0.004f), 0.62f,
-                       PATH_HEIGHT - 0.004f, COLOR_ROUTE_SHADOW);
-        draw_road_disc(node_position(to, layout, PATH_HEIGHT - 0.004f), 0.62f,
-                       PATH_HEIGHT - 0.004f, COLOR_ROUTE_SHADOW);
-        draw_band(node_position(from, layout, PATH_HEIGHT),
-                  node_position(to, layout, PATH_HEIGHT), 0.46f, COLOR_ROUTE);
-        draw_road_disc(node_position(from, layout, PATH_HEIGHT), 0.46f,
-                       PATH_HEIGHT, COLOR_ROUTE);
-        draw_road_disc(node_position(to, layout, PATH_HEIGHT), 0.46f,
-                       PATH_HEIGHT, COLOR_ROUTE);
-        draw_road_disc(node_position(from, layout, PATH_HEIGHT + 0.010f), 0.13f,
-                       PATH_HEIGHT + 0.010f, WHITE);
-        draw_road_disc(node_position(to, layout, PATH_HEIGHT + 0.010f), 0.13f,
-                       PATH_HEIGHT + 0.010f, WHITE);
-        draw_route_arrow(node_position(from, layout, PATH_HEIGHT),
-                         node_position(to, layout, PATH_HEIGHT));
+        int direction = result_edge_direction(&state->result, edge);
+        int point_count;
+        int point_index;
+        Vector3 arrow_from = {0};
+        Vector3 arrow_to = {0};
+        float longest_segment = 0.0f;
+        if (!edge->walkable || direction == 0 ||
+            graph_get_node(graph, edge->from_id) == NULL ||
+            graph_get_node(graph, edge->to_id) == NULL) continue;
+        point_count = edge_render_point_count(graph, edge);
+        for (point_index = 0; point_index + 1 < point_count; ++point_index) {
+            Vector3 a = edge_render_point(graph, edge, point_index, direction < 0,
+                                          layout, PATH_HEIGHT);
+            Vector3 b = edge_render_point(graph, edge, point_index + 1, direction < 0,
+                                          layout, PATH_HEIGHT);
+            Vector3 shadow_a = a;
+            Vector3 shadow_b = b;
+            float dx = b.x - a.x;
+            float dz = b.z - a.z;
+            float segment_length = sqrtf(dx * dx + dz * dz);
+            shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.009f;
+            draw_band(shadow_a, shadow_b, 0.84f, Fade(COLOR_ROUTE, 0.20f));
+            shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.004f;
+            draw_band(shadow_a, shadow_b, 0.62f, COLOR_ROUTE_SHADOW);
+            draw_road_disc(shadow_a, 0.62f, PATH_HEIGHT - 0.004f,
+                           COLOR_ROUTE_SHADOW);
+            draw_road_disc(shadow_b, 0.62f, PATH_HEIGHT - 0.004f,
+                           COLOR_ROUTE_SHADOW);
+            draw_band(a, b, 0.46f, COLOR_ROUTE);
+            draw_road_disc(a, 0.46f, PATH_HEIGHT, COLOR_ROUTE);
+            draw_road_disc(b, 0.46f, PATH_HEIGHT, COLOR_ROUTE);
+            draw_road_disc(a, 0.13f, PATH_HEIGHT + 0.010f, WHITE);
+            draw_road_disc(b, 0.13f, PATH_HEIGHT + 0.010f, WHITE);
+            if (segment_length > longest_segment) {
+                longest_segment = segment_length;
+                arrow_from = a;
+                arrow_to = b;
+            }
+        }
+        if (longest_segment > 0.0f) draw_route_arrow(arrow_from, arrow_to);
     }
 }
 
@@ -628,9 +709,9 @@ static int pick_node(const Graph *graph, const PlaceStore *places,
         if (storage_find_place_by_entrance(places, node->id) == NULL) continue;
         height = fmaxf(node_render_height(node), 0.08f);
         center = node_position(node, layout, height * 0.5f);
-        half = (Vector3){fmaxf(node_render_width(node) * 0.55f, 0.32f),
+        half = (Vector3){fmaxf(node_render_width(node, layout) * 0.55f, 0.32f),
                          fmaxf(height, 0.18f),
-                         fmaxf(node_render_depth(node) * 0.55f, 0.32f)};
+                         fmaxf(node_render_depth(node, layout) * 0.55f, 0.32f)};
         box.min = Vector3Subtract(center, half);
         box.max = Vector3Add(center, half);
         hit = GetRayCollisionBox(ray, box);
@@ -684,12 +765,13 @@ static int is_important_landmark(int id) {
            id == 13 || id == 14 || id == 15 || id == 18 || id == 24 || id == 25;
 }
 
-static int label_visible(const Node *node, const Camera3D *camera,
+static int label_visible(const Node *node, const Place *place, const Camera3D *camera,
                          const SceneLayout *layout, const RendererState *state) {
     if (node->id == state->start_id || node->id == state->goal_id ||
         node->id == state->hover_id || node->id == state->search_match_id) return 1;
+    if (place != NULL && place->name[0] != '\0') return 1;
     if (!node->visible) return 0;
-    if (is_important_landmark(node->id)) return 1;
+    if (layout->legacy_decorations && is_important_landmark(node->id)) return 1;
     return camera->projection == CAMERA_ORTHOGRAPHIC &&
            camera->fovy < layout->overview_size * 0.58f;
 }
@@ -715,12 +797,13 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
     for (pass = 0; pass < 2; ++pass) {
         for (i = 0; i < graph->node_count; ++i) {
             const Node *node = &graph->nodes[i];
-            int priority = node->id == state->start_id || node->id == state->goal_id ||
-                           node->id == state->hover_id || node->id == state->search_match_id;
+            int selected_priority = node->id == state->start_id ||
+                                    node->id == state->goal_id ||
+                                    node->id == state->hover_id ||
+                                    node->id == state->search_match_id;
             Vector2 screen;
             Rectangle bounds;
             int j, collision = 0;
-            int font_size = priority ? 15 : 13;
             const Place *place = node->id == state->start_id
                                      ? selected_place(places, state->start_place_id, node->id)
                                  : node->id == state->goal_id
@@ -728,8 +811,13 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
                                  : node->id == state->search_match_id
                                      ? selected_place(places, state->search_match_place_id, node->id)
                                      : storage_find_place_by_entrance(places, node->id);
-            const char *label = priority && place != NULL ? place->name : node->name;
-            if (priority != (pass == 0) || !label_visible(node, camera, layout, state)) continue;
+            int priority = selected_priority || place != NULL;
+            int font_size = selected_priority ? 15 : 13;
+            const char *label = place != NULL && place->name[0] != '\0'
+                                    ? place->name
+                                    : node->name;
+            if (priority != (pass == 0) ||
+                !label_visible(node, place, camera, layout, state)) continue;
             screen = GetWorldToScreenEx(
                 node_position(node, layout, node_render_height(node) + 0.17f),
                 *camera, MAP_WIDTH, MAP_HEIGHT);
@@ -890,11 +978,24 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
         DrawText("distance and walking time.", 20, 463, 15, (Color){119, 128, 124, 255});
         return;
     }
-    DrawText(TextFormat("%.1f", state->result.total_distance), 20, 440, 30,
-             (Color){42, 72, 62, 255});
-    DrawText("distance units", 84, 451, 13, (Color){111, 123, 117, 255});
-    DrawText(TextFormat("About %.0f min walk", fmax(1.0, state->result.total_distance * 1.25)),
-             20, 480, 15, (Color){70, 84, 79, 255});
+    {
+        char distance_text[32];
+        const char *distance_unit = graph->weights_in_meters ? "m" : "distance units";
+        snprintf(distance_text, sizeof(distance_text), "%.1f",
+                 state->result.total_distance);
+        DrawText(distance_text, 20, 440, 30, (Color){42, 72, 62, 255});
+        DrawText(distance_unit, 26 + MeasureText(distance_text, 30), 451, 13,
+                 (Color){111, 123, 117, 255});
+        if (graph->weights_in_meters) {
+            DrawText(TextFormat("About %.1f min walk",
+                                state->result.total_distance / 80.0),
+                     20, 480, 15, (Color){70, 84, 79, 255});
+        } else {
+            DrawText(TextFormat("About %.0f min walk",
+                                fmax(1.0, state->result.total_distance * 1.25)),
+                     20, 480, 15, (Color){70, 84, 79, 255});
+        }
+    }
     DrawText(TextFormat("%d route points", state->result.path_length),
              165, 480, 15, (Color){70, 84, 79, 255});
     DrawText("ROUTE", 20, 515, 11, (Color){98, 111, 105, 255});
@@ -1054,6 +1155,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     Camera3D camera;
     RendererState state = {0};
     RenderTexture2D map_target;
+    RenderTexture2D screen_target = {0};
     int screenshot_mode = getenv("MSP_3D_SCREENSHOT") != NULL;
     int frame_count = 0;
     if (graph == NULL || graph->node_count <= 0 || places == NULL ||
@@ -1067,6 +1169,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     state.search_match_id = -1;
     state.search_match_place_id = -1;
     state.algorithm = 1;
+    state.display_3d = 1;
     state.animation_step = 0.18f;
     state.camera_view = VIEW_NAVIGATION;
     snprintf(state.message, sizeof(state.message), "Choose your route");
@@ -1075,16 +1178,19 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SCU Jiang'an Campus Navigation");
     map_target = LoadRenderTexture(MAP_WIDTH, MAP_HEIGHT);
+    if (screenshot_mode) screen_target = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
     SetTargetFPS(60);
     if (screenshot_mode) {
-        state.start_id = 0;
-        state.goal_id = 40;
-        state.start_place_id = 0;
-        state.goal_place_id = 2;
+        const Place *start_place = &places->places[0];
+        const Place *goal_place = &places->places[places->place_count - 1];
+        state.start_id = start_place->entrance_node_id;
+        state.goal_id = goal_place->entrance_node_id;
+        state.start_place_id = start_place->id;
+        state.goal_place_id = goal_place->id;
         run_search(graph, &state);
         state.animation_count = state.result.visited_count;
         snprintf(state.message, sizeof(state.message), "Recommended route ready");
-        state.camera_view = VIEW_PATH;
+        state.camera_view = VIEW_OVERVIEW;
         camera = camera_for_view(graph, &layout, &state, state.camera_view);
     }
 
@@ -1209,7 +1315,8 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         draw_screen_selection_markers(graph, &layout, &camera, &state);
         EndTextureMode();
 
-        BeginDrawing();
+        if (screenshot_mode) BeginTextureMode(screen_target);
+        else BeginDrawing();
         ClearBackground(COLOR_MAP_SKY);
         DrawTextureRec(map_target.texture,
                        (Rectangle){0, 0, (float)MAP_WIDTH, -(float)MAP_HEIGHT},
@@ -1218,14 +1325,28 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         draw_search_ui(graph, places, &state);
         draw_legend();
         draw_map_tools(&state);
-        EndDrawing();
+        if (screenshot_mode) {
+            EndTextureMode();
+            BeginDrawing();
+            ClearBackground(BLACK);
+            DrawTextureRec(screen_target.texture,
+                           (Rectangle){0, 0, (float)WINDOW_WIDTH, -(float)WINDOW_HEIGHT},
+                           (Vector2){0, 0}, WHITE);
+            EndDrawing();
+        } else {
+            EndDrawing();
+        }
 
         frame_count++;
         if (screenshot_mode && frame_count == 12) {
-            TakeScreenshot("3d-preview.png");
+            Image screenshot = LoadImageFromTexture(screen_target.texture);
+            ImageFlipVertical(&screenshot);
+            ExportImage(screenshot, "3d-preview.png");
+            UnloadImage(screenshot);
             break;
         }
     }
+    if (screenshot_mode) UnloadRenderTexture(screen_target);
     UnloadRenderTexture(map_target);
     CloseWindow();
 }

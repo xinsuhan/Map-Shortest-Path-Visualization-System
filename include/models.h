@@ -8,7 +8,10 @@ typedef enum {
     NODE_JUNCTION,
     NODE_LAKE,
     NODE_SQUARE,
-    NODE_GATE
+    NODE_GATE,
+    NODE_BRIDGE,
+    NODE_ENTRANCE,
+    NODE_SERVICE
 } NodeType;
 
 typedef struct {
@@ -20,13 +23,36 @@ typedef struct {
     float width;
     float depth;
     float height;
+    int visible;
 } Node;
+
+typedef enum {
+    ROAD_MAIN = 0,
+    ROAD_BRANCH,
+    ROAD_ENTRANCE,
+    ROAD_BRIDGE
+} RoadType;
 
 typedef struct {
     int from_id;
     int to_id;
     double weight;
+    RoadType type;
+    int walkable;
 } Edge;
+
+typedef struct {
+    int id;
+    char name[MSP_NAME_LENGTH];
+    char alias[MSP_NAME_LENGTH];
+    int entrance_node_id;
+    char category[MSP_CATEGORY_LENGTH];
+} Place;
+
+typedef struct {
+    Place places[MSP_MAX_PLACES];
+    int place_count;
+} PlaceStore;
 
 typedef struct {
     Node nodes[MSP_MAX_NODES];

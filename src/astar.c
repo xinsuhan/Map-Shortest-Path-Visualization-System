@@ -16,6 +16,9 @@ static double heuristic_scale(const Graph *graph) {
     int i;
 
     for (i = 0; i < graph->edge_count; ++i) {
+        if (!graph->edges[i].walkable) {
+            continue;
+        }
         const Node *from = graph_get_node(graph, graph->edges[i].from_id);
         const Node *to = graph_get_node(graph, graph->edges[i].to_id);
         double geometric_distance;

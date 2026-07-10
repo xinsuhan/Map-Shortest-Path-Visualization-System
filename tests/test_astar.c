@@ -9,7 +9,10 @@
 int main(void) {
     Graph graph;
     PathResult result;
-    Node nodes[] = {{1, "A", 0, 0}, {2, "B", 1, 0}, {3, "C", 2, 0}, {4, "D", 0, 3}};
+    Node nodes[] = {{.id = 1, .name = "A", .x = 0, .y = 0},
+                    {.id = 2, .name = "B", .x = 1, .y = 0},
+                    {.id = 3, .name = "C", .x = 2, .y = 0},
+                    {.id = 4, .name = "D", .x = 0, .y = 3}};
     int i;
 
     graph_init(&graph);

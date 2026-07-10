@@ -54,11 +54,15 @@ int graph_add_node(Graph *graph, Node node) {
     return MSP_OK;
 }
 
-int graph_add_edge(Graph *graph, int from_id, int to_id, double weight, int bidirectional) {
+int graph_add_road_edge(Graph *graph, int from_id, int to_id, double weight,
+                        RoadType type, int walkable, int bidirectional) {
     int from_index;
     int to_index;
 
-    if (graph == NULL || weight < 0.0) {
+    if (graph == NULL || from_id == to_id || weight <= 0.0 ||
+        type < ROAD_MAIN || type > ROAD_BRIDGE ||
+        (walkable != 0 && walkable != 1) ||
+        (bidirectional != 0 && bidirectional != 1)) {
         return MSP_ERROR_INVALID_ARGUMENT;
     }
     from_index = graph_find_node_index(graph, from_id);
@@ -66,15 +70,12 @@ int graph_add_edge(Graph *graph, int from_id, int to_id, double weight, int bidi
     if (from_index < 0 || to_index < 0) {
         return MSP_ERROR_NOT_FOUND;
     }
-    if ((from_index != to_index && graph->adjacency[from_index][to_index] < MSP_INFINITY) ||
-        (bidirectional && from_index != to_index &&
-         graph->adjacency[to_index][from_index] < MSP_INFINITY)) {
-        return MSP_ERROR_DUPLICATE;
-    }
-    if (from_index == to_index) {
+    {
         int i;
         for (i = 0; i < graph->edge_count; ++i) {
-            if (graph->edges[i].from_id == from_id && graph->edges[i].to_id == to_id) {
+            const Edge *edge = &graph->edges[i];
+            if ((edge->from_id == from_id && edge->to_id == to_id) ||
+                (bidirectional && edge->from_id == to_id && edge->to_id == from_id)) {
                 return MSP_ERROR_DUPLICATE;
             }
         }
@@ -83,16 +84,24 @@ int graph_add_edge(Graph *graph, int from_id, int to_id, double weight, int bidi
         return MSP_ERROR_CAPACITY;
     }
 
-    graph->adjacency[from_index][to_index] = weight;
-    if (bidirectional) {
-        graph->adjacency[to_index][from_index] = weight;
+    if (walkable) {
+        graph->adjacency[from_index][to_index] = weight;
+        if (bidirectional) {
+            graph->adjacency[to_index][from_index] = weight;
+        }
     }
 
     graph->edges[graph->edge_count].from_id = from_id;
     graph->edges[graph->edge_count].to_id = to_id;
     graph->edges[graph->edge_count].weight = weight;
+    graph->edges[graph->edge_count].type = type;
+    graph->edges[graph->edge_count].walkable = walkable ? 1 : 0;
     graph->edge_count++;
     return MSP_OK;
+}
+
+int graph_add_edge(Graph *graph, int from_id, int to_id, double weight, int bidirectional) {
+    return graph_add_road_edge(graph, from_id, to_id, weight, ROAD_MAIN, 1, bidirectional);
 }
 
 double graph_get_weight(const Graph *graph, int from_index, int to_index) {

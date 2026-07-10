@@ -3,6 +3,6 @@
 
 #include "models.h"
 
-void renderer3d_run(const Graph *graph);
+void renderer3d_run(const Graph *graph, const PlaceStore *places);
 
 #endif

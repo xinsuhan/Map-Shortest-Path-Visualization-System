@@ -12,6 +12,8 @@
 #include <stdio.h>
 
 typedef struct {
+    int start_place_id;
+    int goal_place_id;
     int start_id;
     int goal_id;
     int algorithm;
@@ -20,6 +22,8 @@ typedef struct {
 } AppSettings;
 
 static void reset_settings(AppSettings *settings) {
+    settings->start_place_id = -1;
+    settings->goal_place_id = -1;
     settings->start_id = -1;
     settings->goal_id = -1;
     settings->algorithm = 1;
@@ -32,20 +36,32 @@ static const char *selected_node_name(const Graph *graph, int node_id) {
     return node != NULL ? node->name : "Not selected";
 }
 
+static const char *selected_location_name(const Graph *graph, const PlaceStore *places,
+                                          int place_id, int node_id) {
+    const Place *place = storage_find_place(places, place_id);
+    if (place != NULL) {
+        return place->name;
+    }
+    return selected_node_name(graph, node_id);
+}
+
 static void wait_for_enter(void) {
     char buffer[8];
     input_read_string("\nPress Enter to continue...", buffer, sizeof(buffer));
 }
 
-static void show_main_screen(const Graph *graph, const AppSettings *settings) {
+static void show_main_screen(const Graph *graph, const PlaceStore *places,
+                             const AppSettings *settings) {
     visualization_clear_screen();
     visualization_draw_map(graph, settings->start_id, settings->goal_id,
                            NULL, 0, -1, NULL);
     printf("\nCurrent settings\n");
     printf("  Start:     [%02d] %s\n", settings->start_id,
-           selected_node_name(graph, settings->start_id));
+           selected_location_name(graph, places, settings->start_place_id,
+                                  settings->start_id));
     printf("  Goal:      [%02d] %s\n", settings->goal_id,
-           selected_node_name(graph, settings->goal_id));
+           selected_location_name(graph, places, settings->goal_place_id,
+                                  settings->goal_id));
     printf("  Algorithm: %s\n", settings->algorithm == 1 ? "Dijkstra" : "A*");
     printf("  Speed:     %s (%d ms/frame)\n", settings->speed_name, settings->delay_ms);
     printf("\n1. Select start       2. Select goal\n");
@@ -74,6 +90,48 @@ static int read_node_selection(const Graph *graph, const char *prompt, int other
         return 0;
     }
     *selected_id = node_id;
+    return 1;
+}
+
+static void print_places(const PlaceStore *places) {
+    int i;
+    if (places == NULL || places->place_count == 0) {
+        return;
+    }
+    printf("\nPlaces:\n");
+    for (i = 0; i < places->place_count; ++i) {
+        const Place *place = &places->places[i];
+        printf("  [%02d] %-28s entrance=%02d  %s\n", place->id, place->name,
+               place->entrance_node_id, place->category);
+    }
+}
+
+static int read_place_selection(const Graph *graph, const PlaceStore *places,
+                                const char *prompt, int other_node_id,
+                                int *selected_place_id, int *selected_node_id) {
+    int place_id;
+    const Place *place;
+    print_places(places);
+    if (!input_read_int(prompt, &place_id)) {
+        printf("Invalid input: enter a numeric place ID.\n");
+        return 0;
+    }
+    place = storage_find_place(places, place_id);
+    if (place == NULL) {
+        printf("Invalid place: ID %d does not exist.\n", place_id);
+        return 0;
+    }
+    if (graph_get_node(graph, place->entrance_node_id) == NULL) {
+        printf("Invalid place data: entrance node %d does not exist.\n",
+               place->entrance_node_id);
+        return 0;
+    }
+    if (place->entrance_node_id == other_node_id) {
+        printf("Start and goal must use different entrance nodes.\n");
+        return 0;
+    }
+    *selected_place_id = place_id;
+    *selected_node_id = place->entrance_node_id;
     return 1;
 }
 
@@ -138,6 +196,7 @@ static int load_map_from_arguments(int argc, char *argv[], Graph *graph) {
 
 int main(int argc, char *argv[]) {
     Graph graph;
+    PlaceStore places;
     AppSettings settings;
     int choice;
     int load_status;
@@ -148,10 +207,19 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to load map data (status %d).\n", load_status);
         return 1;
     }
+    places.place_count = 0;
+    if (argc == 1 || argc >= 4) {
+        load_status = storage_load_places(argc >= 4 ? argv[3] : "data/places.csv",
+                                          &graph, &places);
+        if (load_status != MSP_OK) {
+            fprintf(stderr, "Failed to load place data (status %d).\n", load_status);
+            return 1;
+        }
+    }
     reset_settings(&settings);
 
     for (;;) {
-        show_main_screen(&graph, &settings);
+        show_main_screen(&graph, &places, &settings);
         if (!input_read_int("Select: ", &choice)) {
 #ifdef MSP_HAS_3D
             printf("Invalid menu input: enter a number from 0 to 8.\n");
@@ -165,11 +233,23 @@ int main(int argc, char *argv[]) {
             break;
         }
         if (choice == 1) {
-            read_node_selection(&graph, "Start node ID: ", settings.goal_id,
-                                &settings.start_id);
+            if (places.place_count > 0) {
+                read_place_selection(&graph, &places, "Start place ID: ",
+                                     settings.goal_id, &settings.start_place_id,
+                                     &settings.start_id);
+            } else {
+                read_node_selection(&graph, "Start node ID: ", settings.goal_id,
+                                    &settings.start_id);
+            }
         } else if (choice == 2) {
-            read_node_selection(&graph, "Goal node ID: ", settings.start_id,
-                                &settings.goal_id);
+            if (places.place_count > 0) {
+                read_place_selection(&graph, &places, "Goal place ID: ",
+                                     settings.start_id, &settings.goal_place_id,
+                                     &settings.goal_id);
+            } else {
+                read_node_selection(&graph, "Goal node ID: ", settings.start_id,
+                                    &settings.goal_id);
+            }
         } else if (choice == 3) {
             select_algorithm(&settings);
         } else if (choice == 4) {
@@ -183,7 +263,7 @@ int main(int argc, char *argv[]) {
             visualization_print_graph(&graph);
 #ifdef MSP_HAS_3D
         } else if (choice == 8) {
-            renderer3d_run(&graph);
+            renderer3d_run(&graph, &places);
 #endif
         } else {
 #ifdef MSP_HAS_3D

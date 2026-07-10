@@ -149,7 +149,7 @@ static void canvas_draw_edge(ConsoleCanvas *canvas, const Graph *graph, const Ed
     int y1;
     char weight[12];
 
-    if (from == NULL || to == NULL) {
+    if (!edge->walkable || from == NULL || to == NULL) {
         return;
     }
     x0 = canvas_x(from->x);
@@ -163,11 +163,21 @@ static void canvas_draw_edge(ConsoleCanvas *canvas, const Graph *graph, const Ed
     canvas_write_text(canvas, (x0 + x1) / 2 - 1, (y0 + y1) / 2, weight);
 }
 
-static void canvas_draw_node(ConsoleCanvas *canvas, const Node *node) {
+static void canvas_draw_node(ConsoleCanvas *canvas, const Node *node, int start_id, int goal_id,
+                             const int visited_order[], int visited_count,
+                             int current_id, const PathResult *final_result) {
     int x = canvas_x(node->x);
     int y = canvas_y(node->y);
     char label[16];
     int i;
+    int show_node = node->visible || node->id == start_id || node->id == goal_id ||
+                    node->id == current_id ||
+                    result_contains_node(final_result, node->id) ||
+                    visited_contains(visited_order, visited_count, node->id);
+
+    if (!show_node) {
+        return;
+    }
 
     if (node->type == NODE_JUNCTION) {
         if (in_canvas(x, y)) {
@@ -252,7 +262,8 @@ void visualization_draw_map(const Graph *graph, int start_id, int goal_id,
         canvas_draw_edge(&canvas, graph, &graph->edges[i], final_result);
     }
     for (i = 0; i < graph->node_count; ++i) {
-        canvas_draw_node(&canvas, &graph->nodes[i]);
+        canvas_draw_node(&canvas, &graph->nodes[i], start_id, goal_id,
+                         visited_order, visited_count, current_id, final_result);
     }
 
     printf("SCU Jiang'an Campus - Shortest Path Visualization\n");
@@ -322,14 +333,16 @@ void visualization_print_graph(const Graph *graph) {
     }
     printf("\nNodes (%d):\n", graph->node_count);
     for (i = 0; i < graph->node_count; ++i) {
-        printf("  [%d] %-24s %-8s (%.1f, %.1f)\n", graph->nodes[i].id,
+        printf("  [%d] %-24s %-10s visible=%d (%.1f, %.1f)\n", graph->nodes[i].id,
                graph->nodes[i].name, storage_node_type_name(graph->nodes[i].type),
-               graph->nodes[i].x, graph->nodes[i].y);
+               graph->nodes[i].visible, graph->nodes[i].x, graph->nodes[i].y);
     }
     printf("Edges (%d):\n", graph->edge_count);
     for (i = 0; i < graph->edge_count; ++i) {
-        printf("  %d <-> %d  distance=%.2f\n", graph->edges[i].from_id,
-               graph->edges[i].to_id, graph->edges[i].weight);
+        printf("  %d <-> %d  distance=%.2f type=%s walkable=%d\n",
+               graph->edges[i].from_id, graph->edges[i].to_id,
+               graph->edges[i].weight, storage_road_type_name(graph->edges[i].type),
+               graph->edges[i].walkable);
     }
 }
 
@@ -359,4 +372,6 @@ void visualization_print_path(const Graph *graph, const PathResult *result) {
                i + 1 < result->path_length ? " -> " : "\n");
     }
     printf("Total distance: %.2f\n", result->total_distance);
+    printf("Estimated walking time: %.0f minutes\n",
+           result->total_distance > 0.8 ? result->total_distance * 1.25 : 1.0);
 }

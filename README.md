@@ -145,21 +145,22 @@ cl
 
 ### 3. Windows 编译与运行
 
-如果之前使用过其他 CMake 生成器，需要先删除旧的 `build` 目录，再使用 Visual Studio 2022 重新配置：
+推荐使用 Visual Studio Build Tools 2022：
 
 ```powershell
-Remove-Item -Recurse -Force build
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
 .\build\Debug\map_shortest_path.exe
 ```
 
-如果 `build` 文件夹不存在，第一条 `Remove-Item` 命令报错可以忽略。旧构建目录必须清理，否则 CMake 可能继续使用之前缓存的 `NMake Makefiles` 等生成器。
-
-运行测试：
+也可以使用 MinGW。请先确保 `gcc`、`mingw32-make` 和 `cmake` 均已加入 `PATH`：
 
 ```powershell
-ctest --test-dir build -C Debug --output-on-failure
+cmake -S . -B build -G "MinGW Makefiles" -DMSP_ENABLE_3D=OFF
+cmake --build build
+ctest --test-dir build --output-on-failure
+.\build\map_shortest_path.exe
 ```
 
 ### 4. Linux / macOS 编译与运行
@@ -176,8 +177,7 @@ ctest --test-dir build --output-on-failure
 3D 模式使用 raylib 5.5。首次配置时 CMake 会从 raylib 官方仓库下载并编译依赖：
 
 ```powershell
-$env:PATH = 'D:\new\Tools\mingw492_32\bin;' + $env:PATH
-cmake -S . -B build-3d -G "MinGW Makefiles" -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DMSP_ENABLE_3D=ON
+cmake -S . -B build-3d -DMSP_ENABLE_3D=ON
 cmake --build build-3d
 .\build-3d\map_shortest_path.exe
 ```
@@ -186,12 +186,6 @@ cmake --build build-3d
 
 ```powershell
 .\build-3d\map_shortest_path.exe --3d
-```
-
-当前工作区已经生成可直接运行的验证版本：
-
-```powershell
-.\build-curved-manual\map_shortest_path.exe --3d
 ```
 
 3D 模式保留原控制台功能，并提供：
@@ -205,7 +199,7 @@ cmake --build build-3d
 - `1` / `2` / `3` 调整动画速度
 - `F1` / `F2` / `F3` 切换导航、全览和路径视角
 - 右下角按钮支持缩放、复位和 2.5D/3D 展示切换
-- 方向键与滚轮平移、缩放相机，`Home` 恢复全览视角
+- 在地图空白处按住左键或任意位置按住中键拖动地图；方向键与滚轮也可平移、缩放相机，`Home` 恢复全览视角
 - `R` 重置选择，`Esc` 返回控制台
 
 使用 Ninja、MinGW Makefiles 等单配置生成器时，Windows 可执行文件也可能位于 `build\map_shortest_path.exe`。
@@ -291,17 +285,14 @@ Total Distance: 12
 
 ## 后续改进方向
 
-- 增加 BFS、DFS、Floyd、Bellman-Ford 等算法
-- 支持用户手动添加节点和边
-- 增加道路路口与转弯节点，逐步拆分缺少实际道路支撑的大跨度直连边
-- 基于校园平面图校准地标与路口的相对坐标
-- 支持动态修改边的权重
-- 支持导入真实地图数据
-- 支持自定义算法动画速度
-- 增加暂停和继续功能
-- 优化路径搜索动画效果
-- 优化界面交互效果
-- 支持保存和加载地图文件
+- 使用邻接表和最小堆优化路径搜索
+- 支持更大规模地图
+- 支持动态路况与边权修改
+- 增加更多 POI 和地点分类
+- 增加路线偏好设置
+- 完善多平台 3D 构建
+- 继续拆分 3D 渲染模块
+- 增加更完善的性能测试
 
 ---
 

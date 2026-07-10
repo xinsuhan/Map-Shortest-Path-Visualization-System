@@ -122,6 +122,12 @@ static float clamp_float(float value, float minimum, float maximum) {
 
 static SceneLayout build_scene_layout(const Graph *graph) {
     SceneLayout layout = {0};
+    if (graph == NULL || graph->node_count <= 0) {
+        layout.scale_x = 1.0f;
+        layout.scale_z = 1.0f;
+        layout.overview_size = 1.0f;
+        return layout;
+    }
     double min_x = graph->nodes[0].x;
     double max_x = graph->nodes[0].x;
     double min_y = graph->nodes[0].y;
@@ -1127,15 +1133,26 @@ static int update_search(const PlaceStore *places, RendererState *state) {
 }
 
 static void update_camera_controls(Camera3D *camera, const SceneLayout *layout,
-                                   int over_map) {
+                                   int over_map, int allow_left_drag) {
     float move = (camera->projection == CAMERA_ORTHOGRAPHIC ? camera->fovy : 18.0f) *
                  GetFrameTime() * 0.52f;
     float wheel = over_map ? GetMouseWheelMove() : 0.0f;
     Vector3 shift = {0};
+    int dragging = over_map &&
+                   (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) ||
+                    (allow_left_drag && IsMouseButtonDown(MOUSE_BUTTON_LEFT)));
     if (IsKeyDown(KEY_UP)) shift.z -= move;
     if (IsKeyDown(KEY_DOWN)) shift.z += move;
     if (IsKeyDown(KEY_LEFT)) shift.x -= move;
     if (IsKeyDown(KEY_RIGHT)) shift.x += move;
+    if (dragging) {
+        Vector2 delta = GetMouseDelta();
+        float units_per_pixel =
+            (camera->projection == CAMERA_ORTHOGRAPHIC ? camera->fovy : 18.0f) /
+            (float)MAP_HEIGHT;
+        shift.x -= delta.x * units_per_pixel;
+        shift.z -= delta.y * units_per_pixel;
+    }
     camera->position = Vector3Add(camera->position, shift);
     camera->target = Vector3Add(camera->target, shift);
     if (wheel != 0.0f) {
@@ -1298,7 +1315,8 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
                 }
             }
         }
-        update_camera_controls(&camera, &layout, over_map && !map_ui_hit);
+        update_camera_controls(&camera, &layout, over_map && !map_ui_hit,
+                               state.hover_id < 0);
         update_animation(&state);
 
         BeginTextureMode(map_target);

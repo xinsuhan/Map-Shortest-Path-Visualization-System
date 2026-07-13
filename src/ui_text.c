@@ -47,26 +47,25 @@ static const UiNameMapping PLACE_NAMES[] = {
     {"Campus Stadium", "校园体育场"},
     {"West Dormitory", "西区宿舍"},
     {"East Dormitory", "东区宿舍"},
-    {"East Teaching Area", "东区教学区"},
+    {"Disaster Reconstruction and Management College", "灾后重建与管理学院"},
     {"Southwest Gate", "西南门"},
     {"Library", "图书馆"},
-    {"First Basic Building", "一基楼"},
+    {"Architecture and Environment College Building", "建筑与环境学院楼"},
     {"Second Basic Building", "二基楼"},
     {"East Canteen", "东园食堂"},
     {"West Canteen", "西园食堂"},
     {"Gymnasium", "体育馆"},
-    {"Engineering Training Center", "工程训练中心"},
-    {"Arts and Sciences College", "文理学院"},
-    {"Comprehensive Building", "综合楼"},
-    {"Campus Hospital", "校医院"},
-    {"Knowledge Square", "求是广场"},
+    {"Liberal Arts Buildings", "文科楼群"},
+    {"Aerospace Building", "空天楼"},
+    {"First Teaching Building", "第一教学楼"},
+    {"Comprehensive and First Basic Buildings", "综合楼与一基楼"},
+    {"Administration Building", "行政楼"},
     {"SouthwestGate", "西南门"},
     {"XiyuanDorm", "西园宿舍"},
     {"XiyuanCanteen", "西园食堂"},
     {"YouthSquare", "青春广场"},
     {"WestSportsField", "西区运动场"},
     {"LongBridge", "长桥"},
-    {"KnowledgeSquare", "求是广场"},
     {"JiangAnLibrary", "图书馆"},
     {"FirstTeachingBuilding", "一教楼"},
     {"ComprehensiveBuilding", "综合楼"},
@@ -85,8 +84,7 @@ static const UiNameMapping PLACE_NAMES[] = {
     {"ArchitectureEnvironmentCollege", "建筑与环境学院"},
     {"DisasterManagementCollege", "灾后重建与管理学院"},
     {"EngineeringTrainingCenter", "工程训练中心"},
-    {"DongyuanCanteen", "东园食堂"},
-    {"CampusHospital", "校医院"}
+    {"DongyuanCanteen", "东园食堂"}
 };
 
 const char *ui_text(UiTextId id) {
@@ -113,6 +111,6 @@ const char *ui_font_glyphs(void) {
            "两个地点以查看距离步行时间米单位节点搜索图书馆食堂体育馆图例"
            "教学宿舍餐饮绿地水域道路明远湖艺术学院西区东区西南门一基楼"
            "二基楼东园西园工程训练中心文理综合校医院求是广场青春运动场"
-           "长桥一教楼行政楼游泳馆文科楼群交叉学科建筑与环境灾后重建管理"
+           "长桥一教楼行政楼游泳馆文科楼群交叉学科建筑与环境灾后重建管理空天与第一"
            "共约分钟个更多另有无结果放大缩小复位三维二维。、……";
 }

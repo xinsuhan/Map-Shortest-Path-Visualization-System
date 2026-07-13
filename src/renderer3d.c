@@ -106,8 +106,7 @@ static const MapArea MAP_AREAS[] = {
     {"East green", AREA_GRASS, 14.0f, 4.2f, 4.2f, 5.0f},
     {"Mingyuan Lake", AREA_LAKE, 7.0f, 6.0f, 1.9f, 1.5f},
     {"West Sports", AREA_SPORTS, 5.0f, 11.0f, 2.2f, 1.45f},
-    {"Youth Square", AREA_SQUARE, 5.0f, 8.0f, 1.55f, 1.25f},
-    {"Knowledge Square", AREA_SQUARE, 9.0f, 7.0f, 1.55f, 1.15f}
+    {"Youth Square", AREA_SQUARE, 5.0f, 8.0f, 1.55f, 1.25f}
 };
 
 static const Vector2 TREE_POINTS[] = {
@@ -1013,10 +1012,10 @@ static void draw_screen_selection_markers(const Graph *graph, const PlaceStore *
                                           const RendererState *state) {
     draw_screen_pin(place_display_node(graph, places, state->start_place_id,
                                        state->start_id),
-                    layout, camera, COLOR_START, "璧?);
+                    layout, camera, COLOR_START, "起");
     draw_screen_pin(place_display_node(graph, places, state->goal_place_id,
                                        state->goal_id),
-                    layout, camera, COLOR_GOAL, "缁?);
+                    layout, camera, COLOR_GOAL, "终");
 }
 
 static Rectangle search_box(void) {
@@ -1080,7 +1079,7 @@ static void draw_text_fit(const char *text, int x, int y, int max_width,
         while (length > 0 && (((unsigned char)buffer[length]) & 0xC0) == 0x80) length--;
         buffer[length] = '\0';
     }
-    strcat(buffer, "鈥?);
+    strcat(buffer, "……");
     DrawText(buffer, x, y, font_size, color);
 }
 
@@ -1138,8 +1137,8 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
     DrawLine(20, 396, 280, 396, (Color){218, 224, 217, 255});
     DrawText(ui_text(UI_ROUTE_DETAILS), 20, 414, 13, (Color){98, 111, 105, 255});
     if (!state->has_result) {
-        DrawText("璇烽€夋嫨涓や釜鍦扮偣浠ユ煡鐪嬭窛绂?, 20, 442, 15, (Color){119, 128, 124, 255});
-        DrawText("鍜屾琛屾椂闂淬€?, 20, 465, 15, (Color){119, 128, 124, 255});
+        DrawText(ui_text(UI_ROUTE_DETAILS_HINT), 20, 442, 15,
+                 (Color){119, 128, 124, 255});
         return;
     }
     {
@@ -1153,16 +1152,16 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
         DrawText(distance_unit, 26 + MeasureText(distance_text, 30), 451, 13,
                  (Color){111, 123, 117, 255});
         if (graph->weights_in_meters) {
-            DrawText(TextFormat("姝ヨ绾?%.1f 鍒嗛挓",
+            DrawText(TextFormat("步行约 %.1f 分钟",
                                 state->result.total_distance / 80.0),
                      20, 480, 15, (Color){70, 84, 79, 255});
         } else {
-            DrawText(TextFormat("姝ヨ绾?%.0f 鍒嗛挓",
+            DrawText(TextFormat("步行约 %.0f 分钟",
                                 fmax(1.0, state->result.total_distance * 1.25)),
                      20, 480, 15, (Color){70, 84, 79, 255});
         }
     }
-    DrawText(TextFormat("%d 涓妭鐐?, state->result.path_length),
+    DrawText(TextFormat("%d 个节点", state->result.path_length),
              190, 480, 14, (Color){70, 84, 79, 255});
     DrawText(ui_text(UI_ROUTE), 20, 515, 13, (Color){98, 111, 105, 255});
     y = 538;
@@ -1181,7 +1180,7 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
             y += 25;
         }
         if (state->result.path_length > shown) {
-            DrawText(TextFormat("鍙︽湁 %d 涓妭鐐?, state->result.path_length - shown),
+            DrawText(TextFormat("另有 %d 个节点", state->result.path_length - shown),
                      40, y, 12, (Color){112, 122, 118, 255});
         }
     }
@@ -1254,7 +1253,7 @@ static void draw_tool_button(int index, const char *label, int active) {
 static void draw_map_tools(const RendererState *state) {
     draw_tool_button(0, "+", 0);
     draw_tool_button(1, "-", 0);
-    draw_tool_button(2, "澶?, 0);
+    draw_tool_button(2, "复", 0);
     draw_tool_button(3, state->display_3d ? "3D" : "2.5D", 1);
 }
 

@@ -407,19 +407,19 @@ static const char *curved_poi_display_name(const char *external_id) {
     if (strcmp(external_id, "POI03") == 0) return "Campus Stadium";
     if (strcmp(external_id, "POI04") == 0) return "West Dormitory";
     if (strcmp(external_id, "POI05") == 0) return "East Dormitory";
-    if (strcmp(external_id, "POI06") == 0) return "East Teaching Area";
+    if (strcmp(external_id, "POI06") == 0) return "Disaster Reconstruction and Management College";
     if (strcmp(external_id, "POI07") == 0) return "Southwest Gate";
     if (strcmp(external_id, "POI08") == 0) return "Library";
-    if (strcmp(external_id, "POI09") == 0) return "First Basic Building";
+    if (strcmp(external_id, "POI09") == 0) return "Architecture and Environment College Building";
     if (strcmp(external_id, "POI10") == 0) return "Second Basic Building";
     if (strcmp(external_id, "POI11") == 0) return "East Canteen";
     if (strcmp(external_id, "POI12") == 0) return "West Canteen";
     if (strcmp(external_id, "POI13") == 0) return "Gymnasium";
-    if (strcmp(external_id, "POI14") == 0) return "Engineering Training Center";
-    if (strcmp(external_id, "POI15") == 0) return "Arts and Sciences College";
-    if (strcmp(external_id, "POI16") == 0) return "Comprehensive Building";
-    if (strcmp(external_id, "POI17") == 0) return "Campus Hospital";
-    if (strcmp(external_id, "POI18") == 0) return "Knowledge Square";
+    if (strcmp(external_id, "POI14") == 0) return "Liberal Arts Buildings";
+    if (strcmp(external_id, "POI15") == 0) return "Aerospace Building";
+    if (strcmp(external_id, "POI16") == 0) return "First Teaching Building";
+    if (strcmp(external_id, "POI17") == 0) return "Comprehensive and First Basic Buildings";
+    if (strcmp(external_id, "POI18") == 0) return "Administration Building";
     return external_id;
 }
 
@@ -469,6 +469,8 @@ static int load_curved_pois(const char *file_path, Graph *graph,
         Node node;
         Place place;
         const Node *nearest;
+        int anchor_edge_index;
+        double anchor_weight;
         line_number++;
         trim_newline(line);
         if (line[0] == '\0' || line[0] == '#') continue;
@@ -499,6 +501,21 @@ static int load_curved_pois(const char *file_path, Graph *graph,
         node.visible = 1;
         set_curved_poi_dimensions(&node, fields[4]);
         if (graph_add_node(graph, node) != MSP_OK) {
+            fclose(file);
+            return MSP_ERROR_FORMAT;
+        }
+        /* Keep a non-walkable display anchor in the edge/geometry model so the
+         * POI's visual association remains explicit without making routing or
+         * road rendering draw a straight segment through the POI footprint. */
+        anchor_edge_index = graph->edge_count;
+        anchor_weight = hypot(node.x - nearest->x, node.y - nearest->y) * 0.8;
+        if (anchor_weight < MSP_EPSILON) anchor_weight = MSP_EPSILON;
+        if (graph_add_road_edge(graph, node.id, nearest_id, anchor_weight,
+                                ROAD_ENTRANCE, 0, 1) != MSP_OK ||
+            graph_append_edge_geometry_point(graph, anchor_edge_index,
+                                             node.x, node.y) != MSP_OK ||
+            graph_append_edge_geometry_point(graph, anchor_edge_index,
+                                             nearest->x, nearest->y) != MSP_OK) {
             fclose(file);
             return MSP_ERROR_FORMAT;
         }

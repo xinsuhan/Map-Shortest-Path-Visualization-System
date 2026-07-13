@@ -1,6 +1,7 @@
 param(
     [string[]]$EdgeId = @(),
     [double]$LengthTolerance = 0.15,
+    [int]$ClearancePx = 8,
     [switch]$SkipNodeCheck
 )
 
@@ -8,9 +9,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $dataDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$nodes = Import-Csv (Join-Path $dataDir "nodes.csv")
-$edges = Import-Csv (Join-Path $dataDir "edges_curved.csv")
-$geometry = Import-Csv (Join-Path $dataDir "edge_geometry_points.csv")
+$nodes = Import-Csv (Join-Path $dataDir "nodes.csv") -Encoding UTF8
+$edges = Import-Csv (Join-Path $dataDir "edges_curved.csv") -Encoding UTF8
+$geometry = Import-Csv (Join-Path $dataDir "edge_geometry_points.csv") -Encoding UTF8
 $nodeById = @{}
 $geometryByEdge = @{}
 $warnings = [System.Collections.Generic.List[string]]::new()
@@ -57,29 +58,56 @@ function Test-BuildingPixel([System.Drawing.Color]$color) {
               $color.R -gt ($color.G + 20) -and $color.B -gt ($color.G + 15)
     $orange = $color.R -ge 190 -and $color.G -ge 80 -and
               $color.G -le 190 -and $color.B -lt 155
-    return $purple -or $orange
+    $yellow = $color.R -ge 190 -and $color.G -ge 185 -and $color.B -lt 135
+    return $purple -or $orange -or $yellow
 }
 
-function Test-SegmentWater($from, $to) {
+function Get-ObstacleAt([int]$x, [int]$y, [bool]$AllowWater) {
+    if ($x -lt 0 -or $y -lt 0 -or $x -ge $map.Width -or $y -ge $map.Height) {
+        return $null
+    }
+    $color = $map.GetPixel($x, $y)
+    if (Test-BuildingPixel $color) {
+        return "building"
+    }
+    if (-not $AllowWater -and (Test-WaterPixel $color)) {
+        return "water"
+    }
+    return $null
+}
+
+function Test-SegmentObstacle($from, $to, [bool]$AllowWater) {
     $x1 = [double]$from.x
     $y1 = [double]$from.y
     $x2 = [double]$to.x
     $y2 = [double]$to.y
-    $steps = [Math]::Max(1, [int][Math]::Ceiling((Get-Distance $x1 $y1 $x2 $y2)))
+    $length = Get-Distance $x1 $y1 $x2 $y2
+    $steps = [Math]::Max(1, [int][Math]::Ceiling($length))
+    $normalX = if ($length -gt 0.0) { -($y2 - $y1) / $length } else { 0.0 }
+    $normalY = if ($length -gt 0.0) { ($x2 - $x1) / $length } else { 0.0 }
     for ($i = 0; $i -le $steps; $i++) {
-        $x = [int][Math]::Round($x1 + ($x2 - $x1) * $i / $steps)
-        $y = [int][Math]::Round($y1 + ($y2 - $y1) * $i / $steps)
-        if ($x -lt 0 -or $y -lt 0 -or $x -ge $map.Width -or $y -ge $map.Height) {
-            continue
-        }
-        if (Test-WaterPixel $map.GetPixel($x, $y)) {
-            return "$x,$y"
+        $centerX = $x1 + ($x2 - $x1) * $i / $steps
+        $centerY = $y1 + ($y2 - $y1) * $i / $steps
+        for ($offset = -$ClearancePx; $offset -le $ClearancePx; $offset++) {
+            $x = [int][Math]::Round($centerX + $normalX * $offset)
+            $y = [int][Math]::Round($centerY + $normalY * $offset)
+            $kind = Get-ObstacleAt $x $y $AllowWater
+            if ($null -ne $kind) {
+                return [PSCustomObject]@{ Kind = $kind; X = $x; Y = $y }
+            }
         }
     }
     return $null
 }
 
 foreach ($edge in $edges) {
+    $walkable = 0
+    if ($null -eq $edge.PSObject.Properties['walkable'] -or
+        -not [int]::TryParse([string]$edge.walkable, [ref]$walkable) -or
+        ($walkable -ne 0 -and $walkable -ne 1)) {
+        $warnings.Add("$($edge.id) has invalid walkable value '$($edge.walkable)'; expected 0 or 1")
+        continue
+    }
     if (-not $geometryByEdge.ContainsKey($edge.id)) {
         $warnings.Add("$($edge.id) has no geometry points")
         continue
@@ -110,12 +138,13 @@ foreach ($edge in $edges) {
     }
 
     $curvedLength = 0.0
-    $waterHit = $null
+    $obstacleHit = $null
+    $allowWater = $edge.kind -eq "bridge"
     for ($i = 0; $i + 1 -lt $points.Count; $i++) {
         $curvedLength += Get-Distance ([double]$points[$i].x) ([double]$points[$i].y) `
                                       ([double]$points[$i + 1].x) ([double]$points[$i + 1].y)
-        if ($null -eq $waterHit) {
-            $waterHit = Test-SegmentWater $points[$i] $points[$i + 1]
+        if ($walkable -eq 1 -and $null -eq $obstacleHit) {
+            $obstacleHit = Test-SegmentObstacle $points[$i] $points[$i + 1] $allowWater
         }
     }
     if ([Math]::Abs($curvedLength - [double]$edge.distance_px_curved) -gt $LengthTolerance) {
@@ -126,8 +155,8 @@ foreach ($edge in $edges) {
         $warnings.Add(("{0} curved metric length is {1:N1}m, CSV says {2:N1}m" -f
                       $edge.id, ($curvedLength * 0.8), [double]$edge.distance_m_est_curved))
     }
-    if ($null -ne $waterHit) {
-        $warnings.Add("$($edge.id) intersects mapped water near $waterHit")
+    if ($null -ne $obstacleHit) {
+        $warnings.Add("$($edge.id) violates $ClearancePx px $($obstacleHit.Kind) clearance near $($obstacleHit.X),$($obstacleHit.Y)")
     }
 }
 

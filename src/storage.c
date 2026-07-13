@@ -263,20 +263,13 @@ static int load_curved_edges(const char *file_path, Graph *graph,
     if (file == NULL) return MSP_ERROR_IO;
     *edge_ref_count = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
-<<<<<<< HEAD
         char *fields[13];
-=======
-        char *fields[12];
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         int field_count;
         int from_id;
         int to_id;
         int bidirectional;
         int expected_points;
-<<<<<<< HEAD
         int walkable;
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         int edge_index;
         int status;
         double curved_weight;
@@ -284,7 +277,6 @@ static int load_curved_edges(const char *file_path, Graph *graph,
         line_number++;
         trim_newline(line);
         if (line[0] == '\0' || line[0] == '#') continue;
-<<<<<<< HEAD
         field_count = split_csv_line(line, fields, 13);
         if (line_number == 1 && field_count == 13 && strcmp(fields[0], "id") == 0) {
             continue;
@@ -295,16 +287,6 @@ static int load_curved_edges(const char *file_path, Graph *graph,
             !parse_int_strict(fields[11], &expected_points) || expected_points < 2 ||
             !parse_int_strict(fields[12], &walkable) ||
             (walkable != 0 && walkable != 1) ||
-=======
-        field_count = split_csv_line(line, fields, 12);
-        if (line_number == 1 && field_count == 12 && strcmp(fields[0], "id") == 0) {
-            continue;
-        }
-        if (field_count != 12 || *edge_ref_count >= MSP_MAX_EDGES ||
-            external_edge_ref_index(edge_refs, *edge_ref_count, fields[0]) >= 0 ||
-            !parse_double_strict(fields[10], &curved_weight) || curved_weight <= 0.0 ||
-            !parse_int_strict(fields[11], &expected_points) || expected_points < 2 ||
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             !curved_edge_is_bidirectional(fields[5], &bidirectional)) {
             fclose(file);
             return MSP_ERROR_FORMAT;
@@ -320,11 +302,7 @@ static int load_curved_edges(const char *file_path, Graph *graph,
         edge_refs[*edge_ref_count].owns_geometry = edge_index < 0;
         if (edge_index < 0) {
             status = graph_add_road_edge(graph, from_id, to_id, curved_weight,
-<<<<<<< HEAD
                                          type, walkable, bidirectional);
-=======
-                                         type, 1, bidirectional);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             if (status != MSP_OK) {
                 fclose(file);
                 return status;
@@ -336,13 +314,10 @@ static int load_curved_edges(const char *file_path, Graph *graph,
                 fclose(file);
                 return MSP_ERROR_FORMAT;
             }
-<<<<<<< HEAD
             if (existing->walkable != walkable) {
                 fclose(file);
                 return MSP_ERROR_FORMAT;
             }
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             if (type == ROAD_BRIDGE) existing->type = ROAD_BRIDGE;
         }
         snprintf(edge_refs[*edge_ref_count].external_id,
@@ -489,17 +464,8 @@ static int load_curved_pois(const char *file_path, Graph *graph,
         char *fields[6];
         int field_count;
         int nearest_id;
-<<<<<<< HEAD
         double x;
         double y;
-=======
-        int edge_index;
-        double x;
-        double y;
-        double dx;
-        double dy;
-        double connector_weight;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         Node node;
         Place place;
         const Node *nearest;
@@ -536,35 +502,12 @@ static int load_curved_pois(const char *file_path, Graph *graph,
             fclose(file);
             return MSP_ERROR_FORMAT;
         }
-<<<<<<< HEAD
-=======
-        dx = x - nearest->x;
-        dy = y - nearest->y;
-        connector_weight = sqrt(dx * dx + dy * dy) * 0.8;
-        if (connector_weight < 1.0) connector_weight = 1.0;
-        if (graph_add_road_edge(graph, node.id, nearest_id, connector_weight,
-                                ROAD_ENTRANCE, 1, 1) != MSP_OK) {
-            fclose(file);
-            return MSP_ERROR_FORMAT;
-        }
-        edge_index = graph->edge_count - 1;
-        if (graph_append_edge_geometry_point(graph, edge_index, node.x, node.y) != MSP_OK ||
-            graph_append_edge_geometry_point(graph, edge_index,
-                                             nearest->x, nearest->y) != MSP_OK) {
-            fclose(file);
-            return MSP_ERROR_CAPACITY;
-        }
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         memset(&place, 0, sizeof(place));
         place.id = places->place_count;
         snprintf(place.name, sizeof(place.name), "%s", node.name);
         snprintf(place.alias, sizeof(place.alias), "%s", fields[1]);
-<<<<<<< HEAD
         place.display_node_id = node.id;
         place.entrance_node_id = nearest_id;
-=======
-        place.entrance_node_id = node.id;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         snprintf(place.category, sizeof(place.category), "%s", fields[4]);
         places->places[places->place_count++] = place;
     }
@@ -791,12 +734,8 @@ int storage_load_places(const char *file_path, const Graph *graph, PlaceStore *p
         place.id = atoi(fields[0]);
         snprintf(place.name, sizeof(place.name), "%s", fields[1]);
         snprintf(place.alias, sizeof(place.alias), "%s", fields[2]);
-<<<<<<< HEAD
         place.display_node_id = atoi(fields[3]);
         place.entrance_node_id = place.display_node_id;
-=======
-        place.entrance_node_id = atoi(fields[3]);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         snprintf(place.category, sizeof(place.category), "%s", fields[4]);
         {
             const Node *entrance = graph_get_node(graph, place.entrance_node_id);
@@ -835,7 +774,6 @@ const Place *storage_find_place(const PlaceStore *places, int place_id) {
     return NULL;
 }
 
-<<<<<<< HEAD
 const Place *storage_find_place_by_display(const PlaceStore *places, int display_node_id) {
     int i;
     if (places == NULL) {
@@ -849,8 +787,6 @@ const Place *storage_find_place_by_display(const PlaceStore *places, int display
     return NULL;
 }
 
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 const Place *storage_find_place_by_entrance(const PlaceStore *places, int entrance_node_id) {
     int i;
     if (places == NULL) {

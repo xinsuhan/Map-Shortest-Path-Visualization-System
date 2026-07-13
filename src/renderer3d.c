@@ -4,10 +4,7 @@
 #include "dijkstra.h"
 #include "graph.h"
 #include "storage.h"
-<<<<<<< HEAD
 #include "ui_text.h"
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 
 #include "raylib.h"
 #include "raymath.h"
@@ -31,12 +28,9 @@
 #define HEIGHT_SCALE 0.42f
 #define ROAD_HEIGHT 0.035f
 #define PATH_HEIGHT 0.070f
-<<<<<<< HEAD
 #define ROUTE_GLOW_WIDTH 0.34f
 #define ROUTE_BORDER_WIDTH 0.24f
 #define ROUTE_CORE_WIDTH 0.16f
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 
 static const Color COLOR_MAP_SKY = {225, 237, 231, 255};
 static const Color COLOR_MAP_GROUND = {239, 240, 226, 255};
@@ -101,11 +95,7 @@ typedef struct {
     int has_result;
     int display_3d;
     CameraView camera_view;
-<<<<<<< HEAD
     char search_query[128];
-=======
-    char search_query[64];
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     char message[128];
 } RendererState;
 
@@ -134,7 +124,6 @@ static float clamp_float(float value, float minimum, float maximum) {
     return value;
 }
 
-<<<<<<< HEAD
 static Font ui_font = {0};
 static int ui_font_owned = 0;
 static Font ui_latin_font = {0};
@@ -245,8 +234,6 @@ static int measure_ui_text(const char *text, int font_size) {
     draw_ui_text((text), (x), (y), (size), __VA_ARGS__)
 #define MeasureText(text, size) measure_ui_text((text), (size))
 
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 static SceneLayout build_scene_layout(const Graph *graph) {
     SceneLayout layout = {0};
     if (graph == NULL || graph->node_count <= 0) {
@@ -342,7 +329,6 @@ static int current_node_id(const RendererState *state) {
 }
 
 static const Place *selected_place(const PlaceStore *places, int place_id,
-<<<<<<< HEAD
                                    int node_id) {
     const Place *place = storage_find_place(places, place_id);
     if (place != NULL && (place->entrance_node_id == node_id ||
@@ -357,14 +343,6 @@ static const Node *place_display_node(const Graph *graph, const PlaceStore *plac
                                       int place_id, int fallback_node_id) {
     const Place *place = storage_find_place(places, place_id);
     return graph_get_node(graph, place != NULL ? place->display_node_id : fallback_node_id);
-=======
-                                   int entrance_node_id) {
-    const Place *place = storage_find_place(places, place_id);
-    if (place != NULL && place->entrance_node_id == entrance_node_id) {
-        return place;
-    }
-    return storage_find_place_by_entrance(places, entrance_node_id);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 }
 
 static Camera3D camera_for_view(const Graph *graph, const SceneLayout *layout,
@@ -660,19 +638,11 @@ static void draw_route_arrow(Vector3 from, Vector3 to) {
     pz = dx;
     middle = Vector3Lerp(from, to, 0.53f);
     middle.y = PATH_HEIGHT + 0.018f;
-<<<<<<< HEAD
     tip = (Vector3){middle.x + dx * 0.18f, middle.y, middle.z + dz * 0.18f};
     left = (Vector3){middle.x - dx * 0.10f + px * 0.09f, middle.y,
                      middle.z - dz * 0.10f + pz * 0.09f};
     right = (Vector3){middle.x - dx * 0.10f - px * 0.09f, middle.y,
                       middle.z - dz * 0.10f - pz * 0.09f};
-=======
-    tip = (Vector3){middle.x + dx * 0.24f, middle.y, middle.z + dz * 0.24f};
-    left = (Vector3){middle.x - dx * 0.14f + px * 0.13f, middle.y,
-                     middle.z - dz * 0.14f + pz * 0.13f};
-    right = (Vector3){middle.x - dx * 0.14f - px * 0.13f, middle.y,
-                      middle.z - dz * 0.14f - pz * 0.13f};
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     DrawTriangle3D(left, tip, right, (Color){255, 239, 195, 245});
 }
 
@@ -729,7 +699,6 @@ static Vector3 edge_render_point(const Graph *graph, const Edge *edge, int index
     }
 }
 
-<<<<<<< HEAD
 static Vector3 route_geometry_point(const Graph *graph, const Edge *edge, int index,
                                     int reverse, const SceneLayout *layout) {
     int point_index = reverse ? edge->geometry_count - index - 1 : index;
@@ -738,8 +707,6 @@ static Vector3 route_geometry_point(const Graph *graph, const Edge *edge, int in
     return world_position(point->x, point->y, layout, PATH_HEIGHT);
 }
 
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 static void draw_roads(const Graph *graph, const SceneLayout *layout,
                        const RendererState *state, int draw_base_network) {
     int i;
@@ -789,7 +756,6 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
         Vector3 arrow_from = {0};
         Vector3 arrow_to = {0};
         float longest_segment = 0.0f;
-<<<<<<< HEAD
         if (!edge->walkable || direction == 0 || !edge_has_geometry(graph, edge) ||
             graph_get_node(graph, edge->from_id) == NULL ||
             graph_get_node(graph, edge->to_id) == NULL) continue;
@@ -799,36 +765,18 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
                                              direction < 0, layout);
             Vector3 b = route_geometry_point(graph, edge, point_index + 1,
                                              direction < 0, layout);
-=======
-        if (!edge->walkable || direction == 0 ||
-            graph_get_node(graph, edge->from_id) == NULL ||
-            graph_get_node(graph, edge->to_id) == NULL) continue;
-        point_count = edge_render_point_count(graph, edge);
-        for (point_index = 0; point_index + 1 < point_count; ++point_index) {
-            Vector3 a = edge_render_point(graph, edge, point_index, direction < 0,
-                                          layout, PATH_HEIGHT);
-            Vector3 b = edge_render_point(graph, edge, point_index + 1, direction < 0,
-                                          layout, PATH_HEIGHT);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             Vector3 shadow_a = a;
             Vector3 shadow_b = b;
             float dx = b.x - a.x;
             float dz = b.z - a.z;
             float segment_length = sqrtf(dx * dx + dz * dz);
             shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.009f;
-<<<<<<< HEAD
             draw_band(shadow_a, shadow_b, ROUTE_GLOW_WIDTH,
                       Fade(COLOR_ROUTE, 0.18f));
             shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.004f;
             draw_band(shadow_a, shadow_b, ROUTE_BORDER_WIDTH,
                       COLOR_ROUTE_SHADOW);
             draw_band(a, b, ROUTE_CORE_WIDTH, COLOR_ROUTE);
-=======
-            draw_band(shadow_a, shadow_b, 0.66f, Fade(COLOR_ROUTE, 0.18f));
-            shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.004f;
-            draw_band(shadow_a, shadow_b, 0.46f, COLOR_ROUTE_SHADOW);
-            draw_band(a, b, 0.34f, COLOR_ROUTE);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             if (segment_length > longest_segment) {
                 longest_segment = segment_length;
                 arrow_from = a;
@@ -851,7 +799,6 @@ static void draw_map_pin(const Node *node, const SceneLayout *layout, Color colo
     DrawSphere((Vector3){position.x, 0.30f, position.z}, 0.105f, color);
 }
 
-<<<<<<< HEAD
 static void draw_selection_markers(const Graph *graph, const PlaceStore *places,
                                    const SceneLayout *layout,
                                    const RendererState *state) {
@@ -859,12 +806,6 @@ static void draw_selection_markers(const Graph *graph, const PlaceStore *places,
                                            state->start_id);
     const Node *goal = place_display_node(graph, places, state->goal_place_id,
                                           state->goal_id);
-=======
-static void draw_selection_markers(const Graph *graph, const SceneLayout *layout,
-                                   const RendererState *state) {
-    const Node *start = graph_get_node(graph, state->start_id);
-    const Node *goal = graph_get_node(graph, state->goal_id);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     const Node *search = graph_get_node(graph, state->search_match_id);
     const Node *hover = graph_get_node(graph, state->hover_id);
     if (start != NULL) draw_map_pin(start, layout, COLOR_START);
@@ -908,11 +849,7 @@ static int pick_node(const Graph *graph, const PlaceStore *places,
         BoundingBox box;
         RayCollision hit;
         float height;
-<<<<<<< HEAD
         if (storage_find_place_by_display(places, node->id) == NULL) continue;
-=======
-        if (storage_find_place_by_entrance(places, node->id) == NULL) continue;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         height = fmaxf(node_render_height(node), 0.08f);
         center = node_position(node, layout, height * 0.5f);
         half = (Vector3){fmaxf(node_render_width(node, layout) * 0.55f, 0.32f),
@@ -933,19 +870,11 @@ static void run_search(const Graph *graph, RendererState *state) {
     int status;
     double started_at;
     if (state->start_id < 0 || state->goal_id < 0) {
-<<<<<<< HEAD
         snprintf(state->message, sizeof(state->message), "%s", ui_text(UI_CHOOSE_BOTH));
         return;
     }
     if (state->start_id == state->goal_id) {
         snprintf(state->message, sizeof(state->message), "%s", ui_text(UI_SAME_ENDPOINT));
-=======
-        snprintf(state->message, sizeof(state->message), "Choose start and destination");
-        return;
-    }
-    if (state->start_id == state->goal_id) {
-        snprintf(state->message, sizeof(state->message), "Start and destination must differ");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         return;
     }
     started_at = GetTime();
@@ -958,11 +887,7 @@ static void run_search(const Graph *graph, RendererState *state) {
     state->animation_timer = 0.0f;
     state->paused = 0;
     snprintf(state->message, sizeof(state->message),
-<<<<<<< HEAD
              "%s", status == MSP_OK ? ui_text(UI_PLANNING_ROUTE) : ui_text(UI_NO_ROUTE));
-=======
-             status == MSP_OK ? "Planning the recommended route..." : "No route found");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 }
 
 static void update_animation(RendererState *state) {
@@ -973,11 +898,7 @@ static void update_animation(RendererState *state) {
         state->animation_timer = 0.0f;
         state->animation_count++;
         if (state->animation_count >= state->result.visited_count) {
-<<<<<<< HEAD
             snprintf(state->message, sizeof(state->message), "%s", ui_text(UI_ROUTE_READY));
-=======
-            snprintf(state->message, sizeof(state->message), "Recommended route ready");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         }
     }
 }
@@ -988,14 +909,9 @@ static int is_important_landmark(int id) {
 }
 
 static int label_visible(const Node *node, const Place *place, const Camera3D *camera,
-<<<<<<< HEAD
                          const SceneLayout *layout, const RendererState *state,
                          int selected_priority) {
     if (selected_priority ||
-=======
-                         const SceneLayout *layout, const RendererState *state) {
-    if (node->id == state->start_id || node->id == state->goal_id ||
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         node->id == state->hover_id || node->id == state->search_match_id) return 1;
     if (place != NULL && place->name[0] != '\0') return 1;
     if (!node->visible) return 0;
@@ -1023,7 +939,6 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
     Rectangle occupied[MSP_MAX_NODES];
     int occupied_count = 0;
     int pass, i;
-<<<<<<< HEAD
     for (pass = 0; pass < 3; ++pass) {
         for (i = 0; i < graph->node_count; ++i) {
             const Node *node = &graph->nodes[i];
@@ -1033,19 +948,11 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
                                      node->id == start_place->display_node_id) ||
                                     (goal_place != NULL &&
                                      node->id == goal_place->display_node_id) ||
-=======
-    for (pass = 0; pass < 2; ++pass) {
-        for (i = 0; i < graph->node_count; ++i) {
-            const Node *node = &graph->nodes[i];
-            int selected_priority = node->id == state->start_id ||
-                                    node->id == state->goal_id ||
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
                                     node->id == state->hover_id ||
                                     node->id == state->search_match_id;
             Vector2 screen;
             Rectangle bounds;
             int j, collision = 0;
-<<<<<<< HEAD
             const Place *place = start_place != NULL && node->id == start_place->display_node_id
                                      ? selected_place(places, state->start_place_id, node->id)
                                  : goal_place != NULL && node->id == goal_place->display_node_id
@@ -1062,22 +969,6 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
             if (label_pass != pass ||
                 !label_visible(node, place, camera, layout, state,
                                selected_priority)) continue;
-=======
-            const Place *place = node->id == state->start_id
-                                     ? selected_place(places, state->start_place_id, node->id)
-                                 : node->id == state->goal_id
-                                     ? selected_place(places, state->goal_place_id, node->id)
-                                 : node->id == state->search_match_id
-                                     ? selected_place(places, state->search_match_place_id, node->id)
-                                     : storage_find_place_by_entrance(places, node->id);
-            int priority = selected_priority || place != NULL;
-            int font_size = selected_priority ? 18 : 15;
-            const char *label = place != NULL && place->name[0] != '\0'
-                                    ? place->name
-                                    : node->name;
-            if (priority != (pass == 0) ||
-                !label_visible(node, place, camera, layout, state)) continue;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
             screen = GetWorldToScreenEx(
                 node_position(node, layout, node_render_height(node) + 0.17f),
                 *camera, MAP_WIDTH, MAP_HEIGHT);
@@ -1116,24 +1007,16 @@ static void draw_screen_pin(const Node *node, const SceneLayout *layout,
              (int)screen.y - 5, 10, WHITE);
 }
 
-<<<<<<< HEAD
 static void draw_screen_selection_markers(const Graph *graph, const PlaceStore *places,
                                           const SceneLayout *layout,
                                           const Camera3D *camera,
                                           const RendererState *state) {
     draw_screen_pin(place_display_node(graph, places, state->start_place_id,
                                        state->start_id),
-                    layout, camera, COLOR_START, "起");
+                    layout, camera, COLOR_START, "璧?);
     draw_screen_pin(place_display_node(graph, places, state->goal_place_id,
                                        state->goal_id),
-                    layout, camera, COLOR_GOAL, "终");
-=======
-static void draw_screen_selection_markers(const Graph *graph, const SceneLayout *layout,
-                                          const Camera3D *camera,
-                                          const RendererState *state) {
-    draw_screen_pin(graph_get_node(graph, state->start_id), layout, camera, COLOR_START, "S");
-    draw_screen_pin(graph_get_node(graph, state->goal_id), layout, camera, COLOR_GOAL, "D");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+                    layout, camera, COLOR_GOAL, "缁?);
 }
 
 static Rectangle search_box(void) {
@@ -1182,17 +1065,12 @@ static void draw_gradient_button(Rectangle bounds, int hovered) {
 
 static void draw_text_fit(const char *text, int x, int y, int max_width,
                           int font_size, Color color) {
-<<<<<<< HEAD
     char buffer[256];
-=======
-    char buffer[64];
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     size_t length = strlen(text);
     if (MeasureText(text, font_size) <= max_width) {
         DrawText(text, x, y, font_size, color);
         return;
     }
-<<<<<<< HEAD
     if (length >= sizeof(buffer) - 4) length = sizeof(buffer) - 4;
     while (length > 0 && (((unsigned char)text[length]) & 0xC0) == 0x80) length--;
     memcpy(buffer, text, length);
@@ -1202,16 +1080,7 @@ static void draw_text_fit(const char *text, int x, int y, int max_width,
         while (length > 0 && (((unsigned char)buffer[length]) & 0xC0) == 0x80) length--;
         buffer[length] = '\0';
     }
-    strcat(buffer, "…");
-=======
-    if (length > 54) length = 54;
-    memcpy(buffer, text, length);
-    buffer[length] = '\0';
-    while (length > 3 && MeasureText(buffer, font_size) > max_width - 15) {
-        buffer[--length] = '\0';
-    }
-    strcat(buffer, "...");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+    strcat(buffer, "鈥?);
     DrawText(buffer, x, y, font_size, color);
 }
 
@@ -1225,7 +1094,6 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
     DrawRectangle(0, 0, NAV_WIDTH, WINDOW_HEIGHT, COLOR_MAP_SKY);
     draw_ui_card((Rectangle){10, 10, NAV_WIDTH - 20, WINDOW_HEIGHT - 20},
                  Fade(COLOR_PANEL, 0.98f), (Color){218, 226, 220, 255});
-<<<<<<< HEAD
     DrawText(ui_text(UI_BRAND), 20, 20, 13, (Color){76, 116, 100, 255});
     DrawText(ui_text(UI_TITLE), 20, 42, 26, (Color){33, 66, 57, 255});
     DrawText(ui_text(UI_START), 20, 91, 13, (Color){98, 111, 105, 255});
@@ -1243,25 +1111,6 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
                        : ui_text(UI_DESTINATION_HINT), 53, 201, 215, 15,
                   (Color){44, 63, 57, 255});
     DrawText(ui_text(UI_ROUTE_MODE), 20, 241, 13, (Color){98, 111, 105, 255});
-=======
-    DrawText("SCU JIANG'AN", 20, 20, 13, (Color){76, 116, 100, 255});
-    DrawText("Campus Navigation", 20, 42, 24, (Color){33, 66, 57, 255});
-    DrawText("START", 20, 91, 11, (Color){98, 111, 105, 255});
-    draw_ui_card((Rectangle){20, 108, 260, 48}, (Color){241, 248, 242, 255},
-                 (Color){211, 226, 214, 255});
-    DrawCircle(38, 132, 6, (Color){48, 170, 99, 255});
-    draw_text_fit(start ? (start_place ? start_place->name : start->name)
-                        : "Click a place on the map", 53, 123, 215, 15,
-                  (Color){44, 63, 57, 255});
-    DrawText("DESTINATION", 20, 169, 11, (Color){98, 111, 105, 255});
-    draw_ui_card((Rectangle){20, 186, 260, 48}, (Color){252, 242, 239, 255},
-                 (Color){235, 216, 211, 255});
-    DrawCircle(38, 210, 6, (Color){221, 78, 69, 255});
-    draw_text_fit(goal ? (goal_place ? goal_place->name : goal->name)
-                       : "Right-click a destination", 53, 201, 215, 15,
-                  (Color){44, 63, 57, 255});
-    DrawText("ROUTE MODE", 20, 241, 11, (Color){98, 111, 105, 255});
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     {
         int algorithm;
         for (algorithm = 1; algorithm <= 2; ++algorithm) {
@@ -1272,22 +1121,15 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
                                  : (Color){238, 241, 237, 255};
             draw_ui_card(button, active ? COLOR_ACCENT : idle,
                          active ? COLOR_ACCENT : (Color){220, 226, 220, 255});
-<<<<<<< HEAD
             const char *name = algorithm == 1 ? "Dijkstra" : "A*";
             DrawText(name,
                      (int)(button.x + (button.width - MeasureText(name, 14)) * 0.5f),
                      (int)button.y + 9, 14,
                      active ? RAYWHITE : (Color){69, 82, 77, 255});
-=======
-            DrawText(algorithm == 1 ? "Dijkstra" : "A*",
-                     (int)button.x + (algorithm == 1 ? 31 : 52), (int)button.y + 9,
-                     14, active ? RAYWHITE : (Color){69, 82, 77, 255});
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         }
     }
     draw_gradient_button(navigate_button(),
                          CheckCollisionPointRec(GetMousePosition(), navigate_button()));
-<<<<<<< HEAD
     DrawText(ui_text(UI_START_NAVIGATION),
              (int)(navigate_button().x +
                    (navigate_button().width - MeasureText(ui_text(UI_START_NAVIGATION), 16)) * 0.5f),
@@ -1296,60 +1138,33 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
     DrawLine(20, 396, 280, 396, (Color){218, 224, 217, 255});
     DrawText(ui_text(UI_ROUTE_DETAILS), 20, 414, 13, (Color){98, 111, 105, 255});
     if (!state->has_result) {
-        DrawText("请选择两个地点以查看距离", 20, 442, 15, (Color){119, 128, 124, 255});
-        DrawText("和步行时间。", 20, 465, 15, (Color){119, 128, 124, 255});
-=======
-    DrawText("Start navigation", 87, 322, 16, RAYWHITE);
-    DrawText(state->message, 20, 367, 13, (Color){77, 99, 90, 255});
-    DrawLine(20, 396, 280, 396, (Color){218, 224, 217, 255});
-    DrawText("ROUTE DETAILS", 20, 414, 11, (Color){98, 111, 105, 255});
-    if (!state->has_result) {
-        DrawText("Select two places to see", 20, 442, 15, (Color){119, 128, 124, 255});
-        DrawText("distance and walking time.", 20, 463, 15, (Color){119, 128, 124, 255});
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+        DrawText("璇烽€夋嫨涓や釜鍦扮偣浠ユ煡鐪嬭窛绂?, 20, 442, 15, (Color){119, 128, 124, 255});
+        DrawText("鍜屾琛屾椂闂淬€?, 20, 465, 15, (Color){119, 128, 124, 255});
         return;
     }
     {
         char distance_text[32];
-<<<<<<< HEAD
         const char *distance_unit = graph->weights_in_meters
                                         ? ui_text(UI_DISTANCE_UNIT)
                                         : ui_text(UI_DISTANCE_UNIT_GENERIC);
-=======
-        const char *distance_unit = graph->weights_in_meters ? "m" : "distance units";
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         snprintf(distance_text, sizeof(distance_text), "%.1f",
                  state->result.total_distance);
         DrawText(distance_text, 20, 440, 30, (Color){42, 72, 62, 255});
         DrawText(distance_unit, 26 + MeasureText(distance_text, 30), 451, 13,
                  (Color){111, 123, 117, 255});
         if (graph->weights_in_meters) {
-<<<<<<< HEAD
-            DrawText(TextFormat("步行约 %.1f 分钟",
+            DrawText(TextFormat("姝ヨ绾?%.1f 鍒嗛挓",
                                 state->result.total_distance / 80.0),
                      20, 480, 15, (Color){70, 84, 79, 255});
         } else {
-            DrawText(TextFormat("步行约 %.0f 分钟",
-=======
-            DrawText(TextFormat("About %.1f min walk",
-                                state->result.total_distance / 80.0),
-                     20, 480, 15, (Color){70, 84, 79, 255});
-        } else {
-            DrawText(TextFormat("About %.0f min walk",
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+            DrawText(TextFormat("姝ヨ绾?%.0f 鍒嗛挓",
                                 fmax(1.0, state->result.total_distance * 1.25)),
                      20, 480, 15, (Color){70, 84, 79, 255});
         }
     }
-<<<<<<< HEAD
-    DrawText(TextFormat("%d 个节点", state->result.path_length),
+    DrawText(TextFormat("%d 涓妭鐐?, state->result.path_length),
              190, 480, 14, (Color){70, 84, 79, 255});
     DrawText(ui_text(UI_ROUTE), 20, 515, 13, (Color){98, 111, 105, 255});
-=======
-    DrawText(TextFormat("%d route points", state->result.path_length),
-             165, 480, 15, (Color){70, 84, 79, 255});
-    DrawText("ROUTE", 20, 515, 11, (Color){98, 111, 105, 255});
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     y = 538;
     {
         int i;
@@ -1360,21 +1175,13 @@ static void draw_navigation_panel(const Graph *graph, const PlaceStore *places,
             DrawCircle(27, y + 7, node->type == NODE_JUNCTION ? 3 : 5,
                        node->type == NODE_JUNCTION ? (Color){153, 161, 157, 255}
                                                    : (Color){230, 139, 48, 255});
-<<<<<<< HEAD
             const Place *route_place = storage_find_place_by_entrance(places, node->id);
             draw_text_fit(ui_place_name(route_place != NULL ? route_place->name : node->name),
                           40, y, 230, 13, (Color){63, 76, 71, 255});
             y += 25;
         }
         if (state->result.path_length > shown) {
-            DrawText(TextFormat("另有 %d 个节点", state->result.path_length - shown),
-=======
-            draw_text_fit(node->name, 40, y, 230, 13, (Color){63, 76, 71, 255});
-            y += 25;
-        }
-        if (state->result.path_length > shown) {
-            DrawText(TextFormat("+ %d more points", state->result.path_length - shown),
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+            DrawText(TextFormat("鍙︽湁 %d 涓妭鐐?, state->result.path_length - shown),
                      40, y, 12, (Color){112, 122, 118, 255});
         }
     }
@@ -1395,11 +1202,7 @@ static void draw_search_ui(const Graph *graph, const PlaceStore *places,
     DrawCircleLines((int)box.x + 19, (int)box.y + 19, 7, (Color){83, 101, 94, 255});
     DrawLine((int)box.x + 24, (int)box.y + 25, (int)box.x + 29, (int)box.y + 30,
              (Color){83, 101, 94, 255});
-<<<<<<< HEAD
     DrawText(state->search_query[0] ? state->search_query : ui_text(UI_SEARCH_HINT),
-=======
-    DrawText(state->search_query[0] ? state->search_query : "Search library, canteen, gym...",
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
              (int)box.x + 39, (int)box.y + 12, 16,
              state->search_query[0] ? (Color){50, 65, 59, 255}
                                     : (Color){132, 143, 138, 255});
@@ -1407,11 +1210,7 @@ static void draw_search_ui(const Graph *graph, const PlaceStore *places,
         Rectangle result = {box.x, box.y + box.height + 5, box.width, 38};
         draw_ui_card(result, COLOR_CARD, (Color){210, 220, 214, 255});
         DrawText(TextFormat("[%02d] %s", match_place ? match_place->id : match->id,
-<<<<<<< HEAD
                             ui_place_name(match_place ? match_place->name : match->name)),
-=======
-                            match_place ? match_place->name : match->name),
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
                  (int)result.x + 12, (int)result.y + 10, 14, (Color){49, 72, 62, 255});
     }
 }
@@ -1420,13 +1219,9 @@ static void draw_legend(void) {
     Rectangle panel = legend_panel();
     int x = (int)panel.x;
     int y = (int)panel.y;
-<<<<<<< HEAD
     const char *labels[] = {ui_text(UI_LEGEND_TEACHING), ui_text(UI_LEGEND_DORM_DINING),
                             ui_text(UI_LEGEND_GREEN), ui_text(UI_LEGEND_WATER),
                             ui_text(UI_LEGEND_ROAD), ui_text(UI_LEGEND_ROUTE)};
-=======
-    const char *labels[] = {"Teaching", "Dorm / dining", "Green space", "Water", "Road", "Route"};
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     Color colors[] = {{118,148,169,255}, {204,137,78,255}, {195,216,184,255},
                       {112,188,224,255}, {244,245,239,255}, {239,126,40,255}};
     int i;
@@ -1435,11 +1230,7 @@ static void draw_legend(void) {
     DrawRectangleRounded(panel, 0.10f, 6, (Color){255, 255, 253, 224});
     DrawRectangleRoundedLinesEx(panel, 0.10f, 6, 1.0f,
                                 Fade((Color){115, 129, 122, 255}, 0.32f));
-<<<<<<< HEAD
     DrawText(ui_text(UI_MAP_LEGEND), x + 12, y + 12, 13, (Color){73, 91, 83, 255});
-=======
-    DrawText("MAP LEGEND", x + 12, y + 12, 11, (Color){73, 91, 83, 255});
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     for (i = 0; i < 6; ++i) {
         DrawRectangle(x + 13, y + 38 + i * 20, 14, 8, colors[i]);
         DrawText(labels[i], x + 35, y + 34 + i * 20, 12, (Color){58, 70, 66, 255});
@@ -1463,11 +1254,7 @@ static void draw_tool_button(int index, const char *label, int active) {
 static void draw_map_tools(const RendererState *state) {
     draw_tool_button(0, "+", 0);
     draw_tool_button(1, "-", 0);
-<<<<<<< HEAD
-    draw_tool_button(2, "复", 0);
-=======
-    draw_tool_button(2, "H", 0);
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
+    draw_tool_button(2, "澶?, 0);
     draw_tool_button(3, state->display_3d ? "3D" : "2.5D", 1);
 }
 
@@ -1480,7 +1267,6 @@ static int update_search(const PlaceStore *places, RendererState *state) {
     key = GetCharPressed();
     while (key > 0) {
         length = strlen(state->search_query);
-<<<<<<< HEAD
         if (key >= 32) {
             int utf8_size = 0;
             const char *utf8 = CodepointToUTF8(key, &utf8_size);
@@ -1490,26 +1276,16 @@ static int update_search(const PlaceStore *places, RendererState *state) {
                 state->search_query[length + (size_t)utf8_size] = '\0';
                 changed = 1;
             }
-=======
-        if (key >= 32 && key <= 126 && length + 1 < sizeof(state->search_query)) {
-            state->search_query[length] = (char)key;
-            state->search_query[length + 1] = '\0';
-            changed = 1;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         }
         key = GetCharPressed();
     }
     if (IsKeyPressed(KEY_BACKSPACE) && state->search_query[0]) {
-<<<<<<< HEAD
         length = strlen(state->search_query) - 1;
         while (length > 0 &&
                (((unsigned char)state->search_query[length]) & 0xC0) == 0x80) {
             length--;
         }
         state->search_query[length] = '\0';
-=======
-        state->search_query[strlen(state->search_query) - 1] = '\0';
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         changed = 1;
     }
     if (changed || state->search_match_id < 0) {
@@ -1519,14 +1295,9 @@ static int update_search(const PlaceStore *places, RendererState *state) {
             for (i = 0; places != NULL && i < places->place_count; ++i) {
                 const Place *place = &places->places[i];
                 if (name_contains(place->name, state->search_query) ||
-<<<<<<< HEAD
                     name_contains(place->alias, state->search_query) ||
                     name_contains(ui_place_name(place->name), state->search_query)) {
                     state->search_match_id = place->display_node_id;
-=======
-                    name_contains(place->alias, state->search_query)) {
-                    state->search_match_id = place->entrance_node_id;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
                     state->search_match_place_id = place->id;
                     break;
                 }
@@ -1597,20 +1368,12 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     state.display_3d = 0;
     state.animation_step = 0.18f;
     state.camera_view = VIEW_NAVIGATION;
-<<<<<<< HEAD
     snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_CHOOSE_ROUTE));
     camera = camera_for_view(graph, &layout, &state, state.camera_view);
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, ui_text(UI_WINDOW_TITLE));
     load_ui_font();
-=======
-    snprintf(state.message, sizeof(state.message), "Choose your route");
-    camera = camera_for_view(graph, &layout, &state, state.camera_view);
-
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SCU Jiang'an Campus Navigation");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     {
         char campus_path[1024];
         int written = snprintf(campus_path, sizeof(campus_path),
@@ -1650,11 +1413,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         state.goal_place_id = goal_place->id;
         run_search(graph, &state);
         state.animation_count = state.result.visited_count;
-<<<<<<< HEAD
         snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_ROUTE_READY));
-=======
-        snprintf(state.message, sizeof(state.message), "Recommended route ready");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         state.camera_view = VIEW_OVERVIEW;
         camera = camera_for_view(graph, &layout, &state, state.camera_view);
     }
@@ -1701,7 +1460,6 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         if (state.search_focus && IsKeyPressed(KEY_ENTER) && state.search_match_id >= 0) {
             const Node *match = graph_get_node(graph, state.search_match_id);
             if (state.start_id < 0) {
-<<<<<<< HEAD
                 const Place *place = storage_find_place(
                     places, state.search_match_place_id);
                 state.start_id = place != NULL ? place->entrance_node_id
@@ -1712,12 +1470,6 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
                     places, state.search_match_place_id);
                 state.goal_id = place != NULL ? place->entrance_node_id
                                               : state.search_match_id;
-=======
-                state.start_id = state.search_match_id;
-                state.start_place_id = state.search_match_place_id;
-            } else {
-                state.goal_id = state.search_match_id;
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
                 state.goal_place_id = state.search_match_place_id;
             }
             if (match != NULL) {
@@ -1731,11 +1483,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             }
             state.search_focus = 0;
             state.has_result = 0;
-<<<<<<< HEAD
             snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_PRESS_START));
-=======
-            snprintf(state.message, sizeof(state.message), "Press Start navigation");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         } else if (!state.search_focus && IsKeyPressed(KEY_ENTER)) {
             run_search(graph, &state);
             if (state.has_result) { state.camera_view = VIEW_PATH; camera_changed = 1; }
@@ -1753,11 +1501,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             state.start_id = state.goal_id = -1;
             state.start_place_id = state.goal_place_id = -1;
             state.has_result = 0;
-<<<<<<< HEAD
             snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_ROUTE_CLEARED));
-=======
-            snprintf(state.message, sizeof(state.message), "Route cleared");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         }
         if (camera_changed) camera = camera_for_view(graph, &layout, &state, state.camera_view);
 
@@ -1770,7 +1514,6 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
                 IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 picked = state.hover_id;
                 if (picked >= 0) {
-<<<<<<< HEAD
                     const Place *place = storage_find_place_by_display(places, picked);
                     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                         state.start_id = place != NULL ? place->entrance_node_id : picked;
@@ -1783,19 +1526,6 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
                     state.has_result = 0;
                     snprintf(state.message, sizeof(state.message), "%s",
                              ui_text(UI_PRESS_START));
-=======
-                    const Place *place = storage_find_place_by_entrance(places, picked);
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-                        state.start_id = picked;
-                        state.start_place_id = place != NULL ? place->id : -1;
-                    }
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                        state.goal_id = picked;
-                        state.goal_place_id = place != NULL ? place->id : -1;
-                    }
-                    state.has_result = 0;
-                    snprintf(state.message, sizeof(state.message), "Press Start navigation");
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
                 }
             }
         }
@@ -1814,10 +1544,10 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         for (i = 0; i < graph->node_count; ++i) draw_node(&graph->nodes[i], &layout, &state);
         draw_trees(&layout);
         draw_search_markers(graph, &layout, &state);
-        draw_selection_markers(graph, &layout, &state);
+        draw_selection_markers(graph, places, &layout, &state);
         EndMode3D();
         draw_labels(graph, places, &layout, &camera, &state);
-        draw_screen_selection_markers(graph, &layout, &camera, &state);
+        draw_screen_selection_markers(graph, places, &layout, &camera, &state);
         EndTextureMode();
 
         if (screenshot_mode) BeginTextureMode(screen_target);
@@ -1857,9 +1587,6 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         UnloadTexture(campus_texture);
     }
     UnloadRenderTexture(map_target);
-<<<<<<< HEAD
     unload_ui_font();
-=======
->>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     CloseWindow();
 }

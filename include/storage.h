@@ -13,7 +13,10 @@ int storage_load_curved_campus(const char *nodes_path, const char *edges_path,
                                Graph *graph, PlaceStore *places);
 int storage_load_places(const char *file_path, const Graph *graph, PlaceStore *places);
 const Place *storage_find_place(const PlaceStore *places, int place_id);
+<<<<<<< HEAD
 const Place *storage_find_place_by_display(const PlaceStore *places, int display_node_id);
+=======
+>>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
 const Place *storage_find_place_by_entrance(const PlaceStore *places, int entrance_node_id);
 int storage_load_map(const char *file_path, Graph *graph);
 int storage_save_map(const char *file_path, const Graph *graph);

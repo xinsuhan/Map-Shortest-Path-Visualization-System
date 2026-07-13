@@ -37,8 +37,11 @@ if(MSP_ENABLE_3D)
     find_package(raylib 5.0 QUIET)
     if(NOT raylib_FOUND)
         include(FetchContent)
+<<<<<<< HEAD
         set(PLATFORM Desktop CACHE STRING "" FORCE)
         set(GRAPHICS_API_OPENGL_33 ON CACHE BOOL "" FORCE)
+=======
+>>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
         FetchContent_Declare(raylib
@@ -46,7 +49,11 @@ if(MSP_ENABLE_3D)
             DOWNLOAD_EXTRACT_TIMESTAMP OFF)
         FetchContent_MakeAvailable(raylib)
     endif()
+<<<<<<< HEAD
     target_sources(map_shortest_path PRIVATE src/renderer3d.c src/ui_text.c)
+=======
+    target_sources(map_shortest_path PRIVATE src/renderer3d.c)
+>>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     target_link_libraries(map_shortest_path PRIVATE raylib)
     target_compile_definitions(map_shortest_path PRIVATE MSP_HAS_3D=1)
 endif()

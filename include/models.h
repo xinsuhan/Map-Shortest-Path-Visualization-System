@@ -52,7 +52,10 @@ typedef struct {
     int id;
     char name[MSP_NAME_LENGTH];
     char alias[MSP_NAME_LENGTH];
+<<<<<<< HEAD
     int display_node_id;
+=======
+>>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba
     int entrance_node_id;
     char category[MSP_CATEGORY_LENGTH];
 } Place;
@@ -83,3 +86,7 @@ typedef struct {
 } PathResult;
 
 #endif
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9826c4d37002a3f0273cf63b5e61d6977832b8ba

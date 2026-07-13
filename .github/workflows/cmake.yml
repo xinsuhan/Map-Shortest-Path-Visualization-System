@@ -1,0 +1,26 @@
+name: CMake Build and Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DMSP_ENABLE_3D=OFF
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build -C Debug --output-on-failure

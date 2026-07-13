@@ -29,10 +29,10 @@ int main(void) {
     }
     assert(load_status == MSP_OK);
 
-    assert(graph.node_count == 110);
-    assert(graph.edge_count == 166);
-    assert(places.place_count == 6);
-    assert(graph.geometry_point_count == 777);
+    assert(graph.node_count == 122);
+    assert(graph.edge_count == 178);
+    assert(places.place_count == 18);
+    assert(graph.geometry_point_count == 801);
     assert(graph.weights_in_meters == 1);
 
     for (i = 0; i < graph.edge_count; ++i) {

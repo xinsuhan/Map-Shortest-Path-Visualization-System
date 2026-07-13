@@ -401,6 +401,18 @@ static const char *curved_poi_display_name(const char *external_id) {
     if (strcmp(external_id, "POI04") == 0) return "West Dormitory";
     if (strcmp(external_id, "POI05") == 0) return "East Dormitory";
     if (strcmp(external_id, "POI06") == 0) return "East Teaching Area";
+    if (strcmp(external_id, "POI07") == 0) return "Southwest Gate";
+    if (strcmp(external_id, "POI08") == 0) return "Library";
+    if (strcmp(external_id, "POI09") == 0) return "First Basic Building";
+    if (strcmp(external_id, "POI10") == 0) return "Second Basic Building";
+    if (strcmp(external_id, "POI11") == 0) return "East Canteen";
+    if (strcmp(external_id, "POI12") == 0) return "West Canteen";
+    if (strcmp(external_id, "POI13") == 0) return "Gymnasium";
+    if (strcmp(external_id, "POI14") == 0) return "Engineering Training Center";
+    if (strcmp(external_id, "POI15") == 0) return "Arts and Sciences College";
+    if (strcmp(external_id, "POI16") == 0) return "Comprehensive Building";
+    if (strcmp(external_id, "POI17") == 0) return "Campus Hospital";
+    if (strcmp(external_id, "POI18") == 0) return "Knowledge Square";
     return external_id;
 }
 

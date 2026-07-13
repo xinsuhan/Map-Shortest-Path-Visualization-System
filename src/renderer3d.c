@@ -306,14 +306,16 @@ static void draw_sports_field(Vector3 center, float width, float depth) {
              depth * 0.72f, Fade(WHITE, 0.72f));
 }
 
-static void draw_environment(const SceneLayout *layout) {
+static void draw_environment(const SceneLayout *layout, int has_campus_map) {
     int i;
     float ground_width = layout->max_x - layout->min_x + 5.5f;
     float ground_depth = layout->max_z - layout->min_z + 5.0f;
-    DrawPlane((Vector3){0.0f, -0.035f, 0.0f}, (Vector2){ground_width, ground_depth},
-              COLOR_MAP_GROUND);
-    DrawCubeWires((Vector3){0.0f, -0.025f, 0.0f}, ground_width, 0.02f, ground_depth,
-                  Fade((Color){118, 143, 121, 255}, 0.34f));
+    if (!has_campus_map) {
+        DrawPlane((Vector3){0.0f, -0.035f, 0.0f},
+                  (Vector2){ground_width, ground_depth}, COLOR_MAP_GROUND);
+        DrawCubeWires((Vector3){0.0f, -0.025f, 0.0f}, ground_width, 0.02f,
+                      ground_depth, Fade((Color){118, 143, 121, 255}, 0.34f));
+    }
     if (!layout->legacy_decorations) return;
     for (i = 0; i < (int)(sizeof(MAP_AREAS) / sizeof(MAP_AREAS[0])); ++i) {
         const MapArea *area = &MAP_AREAS[i];
@@ -576,13 +578,15 @@ static Vector3 edge_render_point(const Graph *graph, const Edge *edge, int index
 }
 
 static void draw_roads(const Graph *graph, const SceneLayout *layout,
-                       const RendererState *state) {
+                       const RendererState *state, int draw_base_network) {
     int i;
     int pass;
+    int route_edge_count = 0;
     int show_path = state->has_result &&
                     state->animation_count >= state->result.visited_count;
-    for (pass = 0; pass <= 2; ++pass) {
-        for (i = 0; i < graph->edge_count; ++i) {
+    if (draw_base_network) {
+        for (pass = 0; pass <= 2; ++pass) {
+            for (i = 0; i < graph->edge_count; ++i) {
             const Edge *edge = &graph->edges[i];
             const Node *from = graph_get_node(graph, edge->from_id);
             const Node *to = graph_get_node(graph, edge->to_id);
@@ -610,6 +614,7 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
                 draw_road_disc(b, width, ROAD_HEIGHT + 0.006f,
                                road_fill(edge->type));
             }
+            }
         }
     }
     if (!show_path) return;
@@ -636,25 +641,20 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
             float dz = b.z - a.z;
             float segment_length = sqrtf(dx * dx + dz * dz);
             shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.009f;
-            draw_band(shadow_a, shadow_b, 0.84f, Fade(COLOR_ROUTE, 0.20f));
+            draw_band(shadow_a, shadow_b, 0.66f, Fade(COLOR_ROUTE, 0.18f));
             shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.004f;
-            draw_band(shadow_a, shadow_b, 0.62f, COLOR_ROUTE_SHADOW);
-            draw_road_disc(shadow_a, 0.62f, PATH_HEIGHT - 0.004f,
-                           COLOR_ROUTE_SHADOW);
-            draw_road_disc(shadow_b, 0.62f, PATH_HEIGHT - 0.004f,
-                           COLOR_ROUTE_SHADOW);
-            draw_band(a, b, 0.46f, COLOR_ROUTE);
-            draw_road_disc(a, 0.46f, PATH_HEIGHT, COLOR_ROUTE);
-            draw_road_disc(b, 0.46f, PATH_HEIGHT, COLOR_ROUTE);
-            draw_road_disc(a, 0.13f, PATH_HEIGHT + 0.010f, WHITE);
-            draw_road_disc(b, 0.13f, PATH_HEIGHT + 0.010f, WHITE);
+            draw_band(shadow_a, shadow_b, 0.46f, COLOR_ROUTE_SHADOW);
+            draw_band(a, b, 0.34f, COLOR_ROUTE);
             if (segment_length > longest_segment) {
                 longest_segment = segment_length;
                 arrow_from = a;
                 arrow_to = b;
             }
         }
-        if (longest_segment > 0.0f) draw_route_arrow(arrow_from, arrow_to);
+        if (longest_segment > 0.0f && route_edge_count % 3 == 1) {
+            draw_route_arrow(arrow_from, arrow_to);
+        }
+        route_edge_count++;
     }
 }
 
@@ -691,12 +691,14 @@ static void draw_selection_markers(const Graph *graph, const SceneLayout *layout
 static void draw_search_markers(const Graph *graph, const SceneLayout *layout,
                                 const RendererState *state) {
     int i;
+    int shown = 0;
     for (i = 0; i < graph->node_count; ++i) {
         const Node *node = &graph->nodes[i];
         Vector3 position;
         if (!visited_contains(state, node->id) && node->id != current_node_id(state)) continue;
+        if (node->id != current_node_id(state) && shown++ % 5 != 0) continue;
         position = node_position(node, layout, 0.095f);
-        DrawSphere(position, node->id == current_node_id(state) ? 0.14f : 0.075f,
+        DrawSphere(position, node->id == current_node_id(state) ? 0.13f : 0.045f,
                    node->id == current_node_id(state) ? (Color){38, 119, 184, 255}
                                                       : (Color){95, 157, 201, 180});
     }
@@ -789,9 +791,10 @@ static void draw_rounded_label(Rectangle bounds, const char *text, int font_size
     DrawRectangleRounded(bounds, 0.24f, 6,
                          priority ? (Color){255, 255, 253, 242}
                                   : (Color){255, 255, 253, 220});
-    DrawRectangleRoundedLinesEx(bounds, 0.24f, 6, 1.0f,
-                                Fade((Color){101, 116, 109, 255}, 0.42f));
-    DrawText(text, (int)bounds.x + 5, (int)bounds.y + 3, font_size, COLOR_TEXT);
+    DrawRectangleRoundedLinesEx(bounds, 0.24f, 6, 1.5f,
+                                Fade((Color){65, 79, 72, 255}, 0.58f));
+    DrawText(text, (int)bounds.x + 7, (int)bounds.y + 4, font_size,
+             (Color){24, 43, 36, 255});
 }
 
 static void draw_labels(const Graph *graph, const PlaceStore *places,
@@ -818,7 +821,7 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
                                      ? selected_place(places, state->search_match_place_id, node->id)
                                      : storage_find_place_by_entrance(places, node->id);
             int priority = selected_priority || place != NULL;
-            int font_size = selected_priority ? 15 : 13;
+            int font_size = selected_priority ? 18 : 15;
             const char *label = place != NULL && place->name[0] != '\0'
                                     ? place->name
                                     : node->name;
@@ -829,14 +832,14 @@ static void draw_labels(const Graph *graph, const PlaceStore *places,
                 *camera, MAP_WIDTH, MAP_HEIGHT);
             if (screen.x < 5 || screen.x > MAP_WIDTH - 5 ||
                 screen.y < 5 || screen.y > MAP_HEIGHT - 5) continue;
-            bounds = (Rectangle){screen.x - MeasureText(label, font_size) * 0.5f - 5.0f,
-                                 screen.y - font_size - 6.0f,
-                                 (float)MeasureText(label, font_size) + 10.0f,
-                                 (float)font_size + 7.0f};
+            bounds = (Rectangle){screen.x - MeasureText(label, font_size) * 0.5f - 7.0f,
+                                 screen.y - font_size - 8.0f,
+                                 (float)MeasureText(label, font_size) + 14.0f,
+                                 (float)font_size + 9.0f};
             for (j = 0; j < occupied_count; ++j) {
                 if (CheckCollisionRecs(bounds, occupied[j])) { collision = 1; break; }
             }
-            if (collision && !priority) continue;
+            if (collision && !selected_priority) continue;
             draw_rounded_label(bounds, label, font_size, priority);
             if (occupied_count < MSP_MAX_NODES) occupied[occupied_count++] = bounds;
         }
@@ -1173,6 +1176,10 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     RendererState state = {0};
     RenderTexture2D map_target;
     RenderTexture2D screen_target = {0};
+    Texture2D campus_texture = {0};
+    Model campus_model = {0};
+    Vector3 campus_position = {0};
+    int has_campus_map = 0;
     int screenshot_mode = getenv("MSP_3D_SCREENSHOT") != NULL;
     int frame_count = 0;
     if (graph == NULL || graph->node_count <= 0 || places == NULL ||
@@ -1186,7 +1193,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     state.search_match_id = -1;
     state.search_match_place_id = -1;
     state.algorithm = 1;
-    state.display_3d = 1;
+    state.display_3d = 0;
     state.animation_step = 0.18f;
     state.camera_view = VIEW_NAVIGATION;
     snprintf(state.message, sizeof(state.message), "Choose your route");
@@ -1194,12 +1201,39 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "SCU Jiang'an Campus Navigation");
+    {
+        char campus_path[1024];
+        int written = snprintf(campus_path, sizeof(campus_path),
+                               "%sdata/curved/campus_map.png",
+                               GetApplicationDirectory());
+        if (written > 0 && (size_t)written < sizeof(campus_path) &&
+            FileExists(campus_path)) {
+            campus_texture = LoadTexture(campus_path);
+        } else if (FileExists("data/curved/campus_map.png")) {
+            campus_texture = LoadTexture("data/curved/campus_map.png");
+        }
+        if (campus_texture.id != 0) {
+            float map_width = campus_texture.width * layout.scale_x;
+            float map_depth = campus_texture.height * layout.scale_z;
+            campus_position = world_position(campus_texture.width * 0.5,
+                                             campus_texture.height * 0.5,
+                                             &layout, -0.040f);
+            campus_model = LoadModelFromMesh(GenMeshPlane(map_width, map_depth, 1, 1));
+            SetMaterialTexture(&campus_model.materials[0], MATERIAL_MAP_DIFFUSE,
+                               campus_texture);
+            has_campus_map = 1;
+        }
+    }
     map_target = LoadRenderTexture(MAP_WIDTH, MAP_HEIGHT);
     if (screenshot_mode) screen_target = LoadRenderTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
     SetTargetFPS(60);
     if (screenshot_mode) {
-        const Place *start_place = &places->places[0];
-        const Place *goal_place = &places->places[places->place_count - 1];
+        const Place *start_place = places->place_count > 9
+                                       ? &places->places[6]
+                                       : &places->places[0];
+        const Place *goal_place = places->place_count > 9
+                                      ? &places->places[9]
+                                      : &places->places[places->place_count - 1];
         state.start_id = start_place->entrance_node_id;
         state.goal_id = goal_place->entrance_node_id;
         state.start_place_id = start_place->id;
@@ -1322,8 +1356,11 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         BeginTextureMode(map_target);
         ClearBackground(COLOR_MAP_SKY);
         BeginMode3D(camera);
-        draw_environment(&layout);
-        draw_roads(graph, &layout, &state);
+        if (has_campus_map) {
+            DrawModel(campus_model, campus_position, 1.0f, WHITE);
+        }
+        draw_environment(&layout, has_campus_map);
+        draw_roads(graph, &layout, &state, !has_campus_map);
         for (i = 0; i < graph->node_count; ++i) draw_node(&graph->nodes[i], &layout, &state);
         draw_trees(&layout);
         draw_search_markers(graph, &layout, &state);
@@ -1365,6 +1402,10 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         }
     }
     if (screenshot_mode) UnloadRenderTexture(screen_target);
+    if (has_campus_map) {
+        UnloadModel(campus_model);
+        UnloadTexture(campus_texture);
+    }
     UnloadRenderTexture(map_target);
     CloseWindow();
 }

@@ -31,6 +31,10 @@
 #define ROUTE_GLOW_WIDTH 0.34f
 #define ROUTE_BORDER_WIDTH 0.24f
 #define ROUTE_CORE_WIDTH 0.16f
+#define MAP_DRAG_THRESHOLD 5.0f
+#define MAP_ZOOM_MIN 0.50f
+#define MAP_ZOOM_MAX 3.00f
+#define MAP_ZOOM_STEP 1.10f
 
 static const Color COLOR_MAP_SKY = {225, 237, 231, 255};
 static const Color COLOR_MAP_GROUND = {239, 240, 226, 255};
@@ -95,6 +99,15 @@ typedef struct {
     int has_result;
     int display_3d;
     CameraView camera_view;
+    Vector2 map_offset;
+    float map_zoom;
+    int map_dragging;
+    int map_drag_candidate;
+    int map_click_ready;
+    Vector2 drag_start_mouse;
+    Vector2 drag_start_offset;
+    Vector2 map_click_mouse;
+    float drag_distance;
     char search_query[128];
     char message[128];
 } RendererState;
@@ -1039,6 +1052,117 @@ static Rectangle legend_panel(void) {
     return (Rectangle){WINDOW_WIDTH - 166.0f, 18.0f, 146.0f, 166.0f};
 }
 
+static Vector2 map_to_screen(const RendererState *state, Vector2 map_pos) {
+    return (Vector2){(float)NAV_WIDTH + state->map_offset.x + map_pos.x * state->map_zoom,
+                     state->map_offset.y + map_pos.y * state->map_zoom};
+}
+
+static Vector2 screen_to_map(const RendererState *state, Vector2 screen_pos) {
+    return (Vector2){(screen_pos.x - (float)NAV_WIDTH - state->map_offset.x) /
+                         state->map_zoom,
+                     (screen_pos.y - state->map_offset.y) / state->map_zoom};
+}
+
+static int map_point_visible(Vector2 map_pos) {
+    return map_pos.x >= 0.0f && map_pos.x <= (float)MAP_WIDTH &&
+           map_pos.y >= 0.0f && map_pos.y <= (float)MAP_HEIGHT;
+}
+
+static int is_mouse_over_ui(const RendererState *state, Vector2 mouse) {
+    int i;
+    (void)state;
+    if (mouse.x < (float)NAV_WIDTH) return 1;
+    if (CheckCollisionPointRec(mouse, search_box())) return 1;
+    if (CheckCollisionPointRec(mouse, legend_panel())) return 1;
+    for (i = 0; i < 4; ++i) {
+        if (CheckCollisionPointRec(mouse, tool_button(i))) return 1;
+    }
+    return 0;
+}
+
+static void clamp_map_view(RendererState *state) {
+    float scaled_width = (float)MAP_WIDTH * state->map_zoom;
+    float scaled_height = (float)MAP_HEIGHT * state->map_zoom;
+    if (state->map_zoom < MAP_ZOOM_MIN) state->map_zoom = MAP_ZOOM_MIN;
+    if (state->map_zoom > MAP_ZOOM_MAX) state->map_zoom = MAP_ZOOM_MAX;
+    scaled_width = (float)MAP_WIDTH * state->map_zoom;
+    scaled_height = (float)MAP_HEIGHT * state->map_zoom;
+
+    if (scaled_width <= (float)MAP_WIDTH) {
+        state->map_offset.x = ((float)MAP_WIDTH - scaled_width) * 0.5f;
+    } else {
+        state->map_offset.x = clamp_float(state->map_offset.x,
+                                          (float)MAP_WIDTH - scaled_width, 0.0f);
+    }
+    if (scaled_height <= (float)MAP_HEIGHT) {
+        state->map_offset.y = ((float)MAP_HEIGHT - scaled_height) * 0.5f;
+    } else {
+        state->map_offset.y = clamp_float(state->map_offset.y,
+                                          (float)MAP_HEIGHT - scaled_height, 0.0f);
+    }
+}
+
+static void reset_map_view(RendererState *state) {
+    state->map_zoom = 1.0f;
+    state->map_offset = (Vector2){0.0f, 0.0f};
+    state->map_dragging = 0;
+    state->map_drag_candidate = 0;
+    state->map_click_ready = 0;
+    state->drag_distance = 0.0f;
+    clamp_map_view(state);
+}
+
+static void zoom_map_at_screen(RendererState *state, Vector2 mouse, float factor) {
+    Vector2 map_before = screen_to_map(state, mouse);
+    float new_zoom = clamp_float(state->map_zoom * factor, MAP_ZOOM_MIN, MAP_ZOOM_MAX);
+    state->map_zoom = new_zoom;
+    state->map_offset.x = mouse.x - (float)NAV_WIDTH - map_before.x * state->map_zoom;
+    state->map_offset.y = mouse.y - map_before.y * state->map_zoom;
+    clamp_map_view(state);
+}
+
+static void update_map_zoom(RendererState *state) {
+    Vector2 mouse = GetMousePosition();
+    float wheel;
+    if (is_mouse_over_ui(state, mouse)) return;
+    wheel = GetMouseWheelMove();
+    if (wheel > 0.0f) {
+        zoom_map_at_screen(state, mouse, powf(MAP_ZOOM_STEP, wheel));
+    } else if (wheel < 0.0f) {
+        zoom_map_at_screen(state, mouse, powf(MAP_ZOOM_STEP, wheel));
+    }
+}
+
+static void update_map_drag(RendererState *state) {
+    Vector2 mouse = GetMousePosition();
+    state->map_click_ready = 0;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !is_mouse_over_ui(state, mouse)) {
+        state->map_dragging = 1;
+        state->map_drag_candidate = 1;
+        state->drag_start_mouse = mouse;
+        state->drag_start_offset = state->map_offset;
+        state->drag_distance = 0.0f;
+    }
+    if (state->map_dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        Vector2 delta = {mouse.x - state->drag_start_mouse.x,
+                         mouse.y - state->drag_start_mouse.y};
+        state->map_offset = (Vector2){state->drag_start_offset.x + delta.x,
+                                      state->drag_start_offset.y + delta.y};
+        state->drag_distance = sqrtf(delta.x * delta.x + delta.y * delta.y);
+        clamp_map_view(state);
+    }
+    if (state->map_dragging && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        state->map_dragging = 0;
+        if (state->map_drag_candidate &&
+            state->drag_distance < MAP_DRAG_THRESHOLD &&
+            !is_mouse_over_ui(state, mouse)) {
+            state->map_click_ready = 1;
+            state->map_click_mouse = mouse;
+        }
+        state->map_drag_candidate = 0;
+    }
+}
+
 static void draw_ui_card(Rectangle bounds, Color fill, Color border) {
     Rectangle shadow = {bounds.x + 2.0f, bounds.y + 3.0f, bounds.width, bounds.height};
     DrawRectangleRounded(shadow, 0.14f, 6, Fade((Color){55, 67, 62, 255}, 0.10f));
@@ -1257,6 +1381,17 @@ static void draw_map_tools(const RendererState *state) {
     draw_tool_button(3, state->display_3d ? "3D" : "2.5D", 1);
 }
 
+static void draw_map_view_hint(void) {
+    Rectangle bounds = {(float)NAV_WIDTH + 18.0f, (float)WINDOW_HEIGHT - 40.0f,
+                        268.0f, 24.0f};
+    DrawRectangleRounded(bounds, 0.25f, 6, (Color){255, 255, 253, 214});
+    DrawRectangleRoundedLinesEx(bounds, 0.25f, 6, 1.0f,
+                                Fade((Color){76, 93, 86, 255}, 0.28f));
+    DrawText("Drag: left mouse   Zoom: wheel   Reset: R",
+             (int)bounds.x + 9, (int)bounds.y + 6, 11,
+             (Color){61, 78, 70, 255});
+}
+
 static int update_search(const PlaceStore *places, RendererState *state) {
     int key;
     size_t length;
@@ -1310,11 +1445,10 @@ static void update_camera_controls(Camera3D *camera, const SceneLayout *layout,
                                    int over_map, int allow_left_drag) {
     float move = (camera->projection == CAMERA_ORTHOGRAPHIC ? camera->fovy : 18.0f) *
                  GetFrameTime() * 0.52f;
-    float wheel = over_map ? GetMouseWheelMove() : 0.0f;
+    float wheel = 0.0f;
     Vector3 shift = {0};
-    int dragging = over_map &&
-                   (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) ||
-                    (allow_left_drag && IsMouseButtonDown(MOUSE_BUTTON_LEFT)));
+    int dragging = over_map && IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
+    (void)allow_left_drag;
     if (IsKeyDown(KEY_UP)) shift.z -= move;
     if (IsKeyDown(KEY_DOWN)) shift.z += move;
     if (IsKeyDown(KEY_LEFT)) shift.x -= move;
@@ -1367,6 +1501,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     state.display_3d = 0;
     state.animation_step = 0.18f;
     state.camera_view = VIEW_NAVIGATION;
+    reset_map_view(&state);
     snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_CHOOSE_ROUTE));
     camera = camera_for_view(graph, &layout, &state, state.camera_view);
 
@@ -1420,15 +1555,10 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     while (!WindowShouldClose()) {
         Vector2 mouse = GetMousePosition();
         int over_map = mouse.x >= NAV_WIDTH && mouse.x < WINDOW_WIDTH;
-        int map_ui_hit = CheckCollisionPointRec(mouse, search_box()) ||
-                         CheckCollisionPointRec(mouse, legend_panel());
+        int map_ui_hit = is_mouse_over_ui(&state, mouse);
         int camera_changed = 0;
         int picked;
         int i;
-
-        for (i = 0; i < 4; ++i) {
-            if (CheckCollisionPointRec(mouse, tool_button(i))) map_ui_hit = 1;
-        }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (CheckCollisionPointRec(mouse, search_box())) {
@@ -1448,14 +1578,28 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             }
             for (i = 0; i < 4; ++i) {
                 if (!CheckCollisionPointRec(mouse, tool_button(i))) continue;
-                if (i == 0 && camera.projection == CAMERA_ORTHOGRAPHIC) camera.fovy *= 0.86f;
-                if (i == 1 && camera.projection == CAMERA_ORTHOGRAPHIC) camera.fovy *= 1.16f;
-                if (i == 2) { state.camera_view = VIEW_NAVIGATION; camera_changed = 1; }
+                if (i == 0) {
+                    zoom_map_at_screen(&state,
+                                       map_to_screen(&state,
+                                                     (Vector2){MAP_WIDTH * 0.5f,
+                                                               MAP_HEIGHT * 0.5f}),
+                                       MAP_ZOOM_STEP);
+                }
+                if (i == 1) {
+                    zoom_map_at_screen(&state,
+                                       map_to_screen(&state,
+                                                     (Vector2){MAP_WIDTH * 0.5f,
+                                                               MAP_HEIGHT * 0.5f}),
+                                       1.0f / MAP_ZOOM_STEP);
+                }
+                if (i == 2) reset_map_view(&state);
                 if (i == 3) { state.display_3d = !state.display_3d; camera_changed = 1; }
             }
         }
 
         update_search(places, &state);
+        update_map_zoom(&state);
+        update_map_drag(&state);
         if (state.search_focus && IsKeyPressed(KEY_ENTER) && state.search_match_id >= 0) {
             const Node *match = graph_get_node(graph, state.search_match_id);
             if (state.start_id < 0) {
@@ -1496,25 +1640,24 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         }
         if (IsKeyPressed(KEY_F2)) { state.camera_view = VIEW_OVERVIEW; camera_changed = 1; }
         if (IsKeyPressed(KEY_F3)) { state.camera_view = VIEW_PATH; camera_changed = 1; }
-        if (IsKeyPressed(KEY_R)) {
-            state.start_id = state.goal_id = -1;
-            state.start_place_id = state.goal_place_id = -1;
-            state.has_result = 0;
-            snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_ROUTE_CLEARED));
+        if (!state.search_focus && IsKeyPressed(KEY_R)) {
+            reset_map_view(&state);
         }
         if (camera_changed) camera = camera_for_view(graph, &layout, &state, state.camera_view);
 
         state.hover_id = -1;
         if (over_map && !map_ui_hit) {
-            Vector2 local_mouse = {mouse.x - NAV_WIDTH, mouse.y};
-            state.hover_id = pick_node(graph, places, &layout,
-                GetScreenToWorldRayEx(local_mouse, camera, MAP_WIDTH, MAP_HEIGHT));
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ||
+            Vector2 local_mouse = screen_to_map(&state, mouse);
+            if (map_point_visible(local_mouse)) {
+                state.hover_id = pick_node(graph, places, &layout,
+                    GetScreenToWorldRayEx(local_mouse, camera, MAP_WIDTH, MAP_HEIGHT));
+            }
+            if (state.map_click_ready ||
                 IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 picked = state.hover_id;
                 if (picked >= 0) {
                     const Place *place = storage_find_place_by_display(places, picked);
-                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    if (state.map_click_ready) {
                         state.start_id = place != NULL ? place->entrance_node_id : picked;
                         state.start_place_id = place != NULL ? place->id : -1;
                     }
@@ -1552,13 +1695,18 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         if (screenshot_mode) BeginTextureMode(screen_target);
         else BeginDrawing();
         ClearBackground(COLOR_MAP_SKY);
-        DrawTextureRec(map_target.texture,
+        DrawTexturePro(map_target.texture,
                        (Rectangle){0, 0, (float)MAP_WIDTH, -(float)MAP_HEIGHT},
-                       (Vector2){NAV_WIDTH, 0}, WHITE);
+                       (Rectangle){(float)NAV_WIDTH + state.map_offset.x,
+                                   state.map_offset.y,
+                                   (float)MAP_WIDTH * state.map_zoom,
+                                   (float)MAP_HEIGHT * state.map_zoom},
+                       (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
         draw_navigation_panel(graph, places, &state);
         draw_search_ui(graph, places, &state);
         draw_legend();
         draw_map_tools(&state);
+        draw_map_view_hint();
         if (screenshot_mode) {
             EndTextureMode();
             BeginDrawing();

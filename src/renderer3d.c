@@ -27,7 +27,9 @@
 #define BUILDING_SCALE 0.76f
 #define HEIGHT_SCALE 0.42f
 #define ROAD_HEIGHT 0.035f
-#define PATH_HEIGHT 0.070f
+#define NETWORK_HEIGHT 0.054f
+#define PATH_HEIGHT 0.082f
+#define NETWORK_OUTLINE_EXTRA 0.055f
 #define ROUTE_GLOW_WIDTH 0.34f
 #define ROUTE_BORDER_WIDTH 0.24f
 #define ROUTE_CORE_WIDTH 0.16f
@@ -46,6 +48,8 @@ static const Color COLOR_ROAD_MAIN = {251, 250, 244, 255};
 static const Color COLOR_ROAD_BRANCH = {244, 245, 239, 245};
 static const Color COLOR_ROAD_ENTRANCE = {236, 239, 234, 185};
 static const Color COLOR_ROAD_BRIDGE = {226, 219, 199, 255};
+static const Color COLOR_NETWORK_OUTLINE = {246, 255, 252, 225};
+static const Color COLOR_NETWORK = {35, 151, 145, 225};
 static const Color COLOR_ROUTE_SHADOW = {255, 255, 250, 245};
 static const Color COLOR_ROUTE = {239, 126, 40, 255};
 static const Color COLOR_START = {42, 166, 96, 255};
@@ -670,6 +674,12 @@ static float road_width(RoadType type) {
     return 0.13f;
 }
 
+static float network_width(RoadType type) {
+    if (type == ROAD_MAIN || type == ROAD_BRIDGE) return 0.15f;
+    if (type == ROAD_BRANCH) return 0.11f;
+    return 0.08f;
+}
+
 static Color road_fill(RoadType type) {
     if (type == ROAD_BRIDGE) return COLOR_ROAD_BRIDGE;
     if (type == ROAD_MAIN) return COLOR_ROAD_MAIN;
@@ -719,16 +729,11 @@ static Vector3 route_geometry_point(const Graph *graph, const Edge *edge, int in
     return world_position(point->x, point->y, layout, PATH_HEIGHT);
 }
 
-static void draw_roads(const Graph *graph, const SceneLayout *layout,
-                       const RendererState *state, int draw_base_network) {
+static void draw_base_roads(const Graph *graph, const SceneLayout *layout) {
     int i;
     int pass;
-    int route_edge_count = 0;
-    int show_path = state->has_result &&
-                    state->animation_count >= state->result.visited_count;
-    if (draw_base_network) {
-        for (pass = 0; pass <= 2; ++pass) {
-            for (i = 0; i < graph->edge_count; ++i) {
+    for (pass = 0; pass <= 2; ++pass) {
+        for (i = 0; i < graph->edge_count; ++i) {
             const Edge *edge = &graph->edges[i];
             const Node *from = graph_get_node(graph, edge->from_id);
             const Node *to = graph_get_node(graph, edge->to_id);
@@ -756,9 +761,48 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
                 draw_road_disc(b, width, ROAD_HEIGHT + 0.006f,
                                road_fill(edge->type));
             }
-            }
         }
     }
+}
+
+static void draw_walkable_edge_overlay(const Graph *graph,
+                                       const SceneLayout *layout) {
+    int i;
+    for (i = 0; i < graph->edge_count; ++i) {
+        const Edge *edge = &graph->edges[i];
+        int point_count;
+        int point_index;
+        float width;
+        if (!edge->walkable || graph_get_node(graph, edge->from_id) == NULL ||
+            graph_get_node(graph, edge->to_id) == NULL) continue;
+        width = network_width(edge->type);
+        point_count = edge_render_point_count(graph, edge);
+        for (point_index = 0; point_index + 1 < point_count; ++point_index) {
+            Vector3 a = edge_render_point(graph, edge, point_index, 0,
+                                          layout, NETWORK_HEIGHT);
+            Vector3 b = edge_render_point(graph, edge, point_index + 1, 0,
+                                          layout, NETWORK_HEIGHT);
+            draw_band(a, b, width + NETWORK_OUTLINE_EXTRA,
+                      COLOR_NETWORK_OUTLINE);
+            draw_road_disc(a, width + NETWORK_OUTLINE_EXTRA, NETWORK_HEIGHT,
+                           COLOR_NETWORK_OUTLINE);
+            draw_road_disc(b, width + NETWORK_OUTLINE_EXTRA, NETWORK_HEIGHT,
+                           COLOR_NETWORK_OUTLINE);
+            a.y += 0.004f;
+            b.y += 0.004f;
+            draw_band(a, b, width, COLOR_NETWORK);
+            draw_road_disc(a, width, NETWORK_HEIGHT + 0.004f, COLOR_NETWORK);
+            draw_road_disc(b, width, NETWORK_HEIGHT + 0.004f, COLOR_NETWORK);
+        }
+    }
+}
+
+static void draw_route(const Graph *graph, const SceneLayout *layout,
+                       const RendererState *state) {
+    int i;
+    int route_edge_count = 0;
+    int show_path = state->has_result &&
+                    state->animation_count >= state->result.visited_count;
     if (!show_path) return;
     for (i = 0; i < graph->edge_count; ++i) {
         const Edge *edge = &graph->edges[i];
@@ -1344,9 +1388,9 @@ static void draw_legend(void) {
     int y = (int)panel.y;
     const char *labels[] = {ui_text(UI_LEGEND_TEACHING), ui_text(UI_LEGEND_DORM_DINING),
                             ui_text(UI_LEGEND_GREEN), ui_text(UI_LEGEND_WATER),
-                            ui_text(UI_LEGEND_ROAD), ui_text(UI_LEGEND_ROUTE)};
+                            "Algorithm roads", ui_text(UI_LEGEND_ROUTE)};
     Color colors[] = {{118,148,169,255}, {204,137,78,255}, {195,216,184,255},
-                      {112,188,224,255}, {244,245,239,255}, {239,126,40,255}};
+                      {112,188,224,255}, {35,151,145,255}, {239,126,40,255}};
     int i;
     DrawRectangleRounded((Rectangle){panel.x + 2, panel.y + 3, panel.width, panel.height},
                          0.10f, 6, Fade((Color){52, 64, 60, 255}, 0.12f));
@@ -1682,11 +1726,13 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             DrawModel(campus_model, campus_position, 1.0f, WHITE);
         }
         draw_environment(&layout, has_campus_map);
-        draw_roads(graph, &layout, &state, !has_campus_map);
+        if (!has_campus_map) draw_base_roads(graph, &layout);
+        draw_walkable_edge_overlay(graph, &layout);
         for (i = 0; i < graph->node_count; ++i) draw_node(&graph->nodes[i], &layout, &state);
         draw_trees(&layout);
         draw_search_markers(graph, &layout, &state);
         draw_selection_markers(graph, places, &layout, &state);
+        draw_route(graph, &layout, &state);
         EndMode3D();
         draw_labels(graph, places, &layout, &camera, &state);
         draw_screen_selection_markers(graph, places, &layout, &camera, &state);

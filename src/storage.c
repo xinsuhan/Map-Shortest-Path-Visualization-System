@@ -135,6 +135,21 @@ static int parse_int_strict(const char *text, int *value) {
     return 1;
 }
 
+static int parse_bool_strict(const char *text, int *value) {
+    if (text == NULL || value == NULL) return 0;
+    if (strcmp(text, "1") == 0 || strcmp(text, "true") == 0 ||
+        strcmp(text, "True") == 0) {
+        *value = 1;
+        return 1;
+    }
+    if (strcmp(text, "0") == 0 || strcmp(text, "false") == 0 ||
+        strcmp(text, "False") == 0) {
+        *value = 0;
+        return 1;
+    }
+    return 0;
+}
+
 static int external_node_id(const ExternalNodeRef refs[], int count,
                             const char *external_id) {
     int i;
@@ -206,14 +221,24 @@ static int load_curved_nodes(const char *file_path, Graph *graph,
         memset(&node, 0, sizeof(node));
         set_node_defaults(&node);
         node.id = *ref_count;
-        snprintf(node.name, sizeof(node.name), "%s", fields[0]);
+        snprintf(node.name, sizeof(node.name), "%s",
+                 fields[5][0] != '\0' ? fields[5] : fields[0]);
         node.x = x;
         node.y = y;
-        node.type = NODE_JUNCTION;
-        node.visible = 0;
+        if (fields[0][0] == 'G') node.type = NODE_GATE;
+        else if (fields[0][0] == 'P' || fields[0][0] == 'D') {
+            node.type = NODE_ENTRANCE;
+        } else if (fields[0][0] == 'B') node.type = NODE_BRIDGE;
+        else node.type = NODE_JUNCTION;
+        node.visible = node.type == NODE_GATE || node.type == NODE_ENTRANCE;
         node.width = 16.0f;
         node.depth = 16.0f;
         node.height = 0.05f;
+        if (node.visible) {
+            node.width = 30.0f;
+            node.depth = 24.0f;
+            node.height = 0.32f;
+        }
         if (graph_add_node(graph, node) != MSP_OK) {
             fclose(file);
             return MSP_ERROR_FORMAT;
@@ -255,6 +280,7 @@ static int load_curved_edges(const char *file_path, Graph *graph,
     FILE *file;
     char line[MSP_LINE_LENGTH];
     int line_number = 0;
+    int file_format = 0;
     if (file_path == NULL || graph == NULL || node_refs == NULL || edge_refs == NULL ||
         edge_ref_count == NULL) {
         return MSP_ERROR_INVALID_ARGUMENT;
@@ -268,28 +294,53 @@ static int load_curved_edges(const char *file_path, Graph *graph,
         int from_id;
         int to_id;
         int bidirectional;
-        int expected_points;
+        int expected_points = -1;
         int walkable;
         int edge_index;
         int status;
         double curved_weight;
-        RoadType type;
+        RoadType type = ROAD_BRANCH;
         line_number++;
         trim_newline(line);
         if (line[0] == '\0' || line[0] == '#') continue;
         field_count = split_csv_line(line, fields, 13);
-        if (line_number == 1 && field_count == 13 && strcmp(fields[0], "id") == 0) {
+        if (line_number == 1 &&
+            ((field_count == 13 && strcmp(fields[0], "id") == 0) ||
+             (field_count == 5 && strcmp(fields[0], "edge_id") == 0))) {
             continue;
         }
-        if (field_count != 13 || *edge_ref_count >= MSP_MAX_EDGES ||
+        if ((field_count != 13 && field_count != 5) ||
+            *edge_ref_count >= MSP_MAX_EDGES ||
             external_edge_ref_index(edge_refs, *edge_ref_count, fields[0]) >= 0 ||
-            !parse_double_strict(fields[10], &curved_weight) || curved_weight <= 0.0 ||
-            !parse_int_strict(fields[11], &expected_points) || expected_points < 2 ||
-            !parse_int_strict(fields[12], &walkable) ||
-            (walkable != 0 && walkable != 1) ||
-            !curved_edge_is_bidirectional(fields[5], &bidirectional)) {
+            (file_format != 0 && file_format != field_count)) {
             fclose(file);
             return MSP_ERROR_FORMAT;
+        }
+        file_format = field_count;
+        if (field_count == 13) {
+            if (!parse_double_strict(fields[10], &curved_weight) ||
+                curved_weight <= 0.0 ||
+                !parse_int_strict(fields[11], &expected_points) ||
+                expected_points < 2 || !parse_bool_strict(fields[12], &walkable) ||
+                !curved_edge_is_bidirectional(fields[5], &bidirectional)) {
+                fclose(file);
+                return MSP_ERROR_FORMAT;
+            }
+            type = curved_road_type(fields[4], fields[5], fields[6]);
+        } else {
+            if (!parse_double_strict(fields[3], &curved_weight) ||
+                curved_weight <= 0.0 || !parse_bool_strict(fields[4], &walkable)) {
+                fclose(file);
+                return MSP_ERROR_FORMAT;
+            }
+            bidirectional = 1;
+            if (fields[1][0] == 'B' || fields[2][0] == 'B') {
+                type = ROAD_BRIDGE;
+            } else if (fields[1][0] == 'P' || fields[1][0] == 'D' ||
+                       fields[1][0] == 'G' || fields[2][0] == 'P' ||
+                       fields[2][0] == 'D' || fields[2][0] == 'G') {
+                type = ROAD_ENTRANCE;
+            }
         }
         from_id = external_node_id(node_refs, node_ref_count, fields[1]);
         to_id = external_node_id(node_refs, node_ref_count, fields[2]);
@@ -297,7 +348,6 @@ static int load_curved_edges(const char *file_path, Graph *graph,
             fclose(file);
             return MSP_ERROR_FORMAT;
         }
-        type = curved_road_type(fields[4], fields[5], fields[6]);
         edge_index = existing_undirected_edge(graph, from_id, to_id);
         edge_refs[*edge_ref_count].owns_geometry = edge_index < 0;
         if (edge_index < 0) {
@@ -327,6 +377,7 @@ static int load_curved_edges(const char *file_path, Graph *graph,
         (*edge_ref_count)++;
     }
     fclose(file);
+    graph->weights_in_meters = file_format == 13;
     return *edge_ref_count > 0 ? MSP_OK : MSP_ERROR_FORMAT;
 }
 
@@ -340,6 +391,7 @@ static int load_curved_geometry(const char *file_path, Graph *graph,
     FILE *file;
     char line[MSP_LINE_LENGTH];
     int line_number = 0;
+    int file_format = 0;
     int i;
     if (file_path == NULL || graph == NULL || edge_refs == NULL) {
         return MSP_ERROR_INVALID_ARGUMENT;
@@ -357,16 +409,30 @@ static int load_curved_geometry(const char *file_path, Graph *graph,
         trim_newline(line);
         if (line[0] == '\0' || line[0] == '#') continue;
         field_count = split_csv_line(line, fields, 7);
-        if (line_number == 1 && field_count == 7 && strcmp(fields[0], "edge_id") == 0) {
+        if (line_number == 1 &&
+            (field_count == 7 || field_count == 4) &&
+            strcmp(fields[0], "edge_id") == 0) {
             continue;
         }
-        ref_index = field_count == 7
+        ref_index = (field_count == 7 || field_count == 4)
                         ? external_edge_ref_index(edge_refs, edge_ref_count, fields[0])
                         : -1;
-        if (field_count != 7 || ref_index < 0 ||
-            !parse_int_strict(fields[4], &point_order) ||
-            !parse_double_strict(fields[5], &x) ||
-            !parse_double_strict(fields[6], &y)) {
+        if ((field_count != 7 && field_count != 4) || ref_index < 0 ||
+            (file_format != 0 && file_format != field_count)) {
+            fclose(file);
+            return MSP_ERROR_FORMAT;
+        }
+        file_format = field_count;
+        if (field_count == 7) {
+            if (!parse_int_strict(fields[4], &point_order) ||
+                !parse_double_strict(fields[5], &x) ||
+                !parse_double_strict(fields[6], &y)) {
+                fclose(file);
+                return MSP_ERROR_FORMAT;
+            }
+        } else if (!parse_int_strict(fields[1], &point_order) ||
+                   !parse_double_strict(fields[2], &x) ||
+                   !parse_double_strict(fields[3], &y)) {
             fclose(file);
             return MSP_ERROR_FORMAT;
         }
@@ -388,8 +454,11 @@ static int load_curved_geometry(const char *file_path, Graph *graph,
         const MapPoint *last;
         if (!ref->owns_geometry) continue;
         edge = &graph->edges[ref->edge_index];
-        if (edge->geometry_count != ref->expected_geometry_count ||
-            edge->geometry_start < 0) return MSP_ERROR_FORMAT;
+        if (edge->geometry_start < 0 || edge->geometry_count < 2 ||
+            (ref->expected_geometry_count >= 0 &&
+             edge->geometry_count != ref->expected_geometry_count)) {
+            return MSP_ERROR_FORMAT;
+        }
         from = graph_get_node(graph, edge->from_id);
         to = graph_get_node(graph, edge->to_id);
         first = &graph->geometry_points[edge->geometry_start];
@@ -529,6 +598,37 @@ static int load_curved_pois(const char *file_path, Graph *graph,
         places->places[places->place_count++] = place;
     }
     fclose(file);
+    return places->place_count > 0 ? MSP_OK : MSP_ERROR_FORMAT;
+}
+
+static int build_curved_places_from_nodes(
+    Graph *graph, const ExternalNodeRef node_refs[], int node_ref_count,
+    PlaceStore *places) {
+    int i;
+    if (graph == NULL || node_refs == NULL || places == NULL) {
+        return MSP_ERROR_INVALID_ARGUMENT;
+    }
+    places->place_count = 0;
+    for (i = 0; i < node_ref_count; ++i) {
+        const char prefix = node_refs[i].external_id[0];
+        const Node *node;
+        Place place;
+        if (prefix != 'G' && prefix != 'P' && prefix != 'D') continue;
+        if (places->place_count >= MSP_MAX_PLACES) return MSP_ERROR_CAPACITY;
+        node = graph_get_node(graph, node_refs[i].node_id);
+        if (node == NULL) return MSP_ERROR_FORMAT;
+        memset(&place, 0, sizeof(place));
+        place.id = places->place_count;
+        snprintf(place.name, sizeof(place.name), "%s", node->name);
+        snprintf(place.alias, sizeof(place.alias), "%s",
+                 node_refs[i].external_id);
+        place.display_node_id = node->id;
+        place.entrance_node_id = node->id;
+        snprintf(place.category, sizeof(place.category), "%s",
+                 prefix == 'G' ? "gate" :
+                 (prefix == 'D' ? "dormitory" : "building"));
+        places->places[places->place_count++] = place;
+    }
     return places->place_count > 0 ? MSP_OK : MSP_ERROR_FORMAT;
 }
 
@@ -698,13 +798,16 @@ int storage_load_curved_campus(const char *nodes_path, const char *edges_path,
     }
     if (status == MSP_OK) {
         status = load_curved_pois(pois_path, graph, node_refs, node_ref_count, places);
+        if (status == MSP_ERROR_IO) {
+            status = build_curved_places_from_nodes(graph, node_refs,
+                                                    node_ref_count, places);
+        }
     }
     if (status != MSP_OK) {
         graph_init(graph);
         places->place_count = 0;
         return status;
     }
-    graph->weights_in_meters = 1;
     return MSP_OK;
 }
 

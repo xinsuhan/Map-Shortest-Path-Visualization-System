@@ -30,6 +30,9 @@ add_custom_command(TARGET map_shortest_path POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/data"
             "$<TARGET_FILE_DIR:map_shortest_path>/data"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "$<TARGET_FILE_DIR:map_shortest_path>/assets"
     COMMENT "Copying map data next to map_shortest_path")
 
 option(MSP_ENABLE_3D "Build the optional raylib 3D renderer" OFF)

@@ -1,7 +1,7 @@
 #ifndef MAP_SHORTEST_PATH_COMMON_H
 #define MAP_SHORTEST_PATH_COMMON_H
 
-#define MSP_MAX_NODES 128
+#define MSP_MAX_NODES 256
 #define MSP_MAX_EDGES 2048
 #define MSP_MAX_PLACES 128
 #define MSP_MAX_GEOMETRY_POINTS 1024
@@ -24,4 +24,3 @@ typedef enum {
 } MspStatus;
 
 #endif
-

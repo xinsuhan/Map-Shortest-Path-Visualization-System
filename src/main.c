@@ -13,6 +13,7 @@
 #include <string.h>
 
 #define MSP_PATH_LENGTH 1024
+#define MSP_DEFAULT_MAP_DATA_DIRECTORY "data/new_jiang_an"
 
 typedef struct {
     int start_place_id;
@@ -216,10 +217,11 @@ static void executable_directory(const char *argv0, char *directory, size_t size
     directory[length] = '\0';
 }
 
-static int curved_data_exists(const char *directory) {
+static int map_data_file_exists(const char *directory, const char *file_name) {
     char path[MSP_PATH_LENGTH];
     FILE *file;
-    int written = snprintf(path, sizeof(path), "%s/data/curved/nodes.csv", directory);
+    int written = snprintf(path, sizeof(path), "%s/%s/%s", directory,
+                           MSP_DEFAULT_MAP_DATA_DIRECTORY, file_name);
     if (written < 0 || (size_t)written >= sizeof(path)) return 0;
     file = fopen(path, "r");
     if (file == NULL) return 0;
@@ -227,9 +229,16 @@ static int curved_data_exists(const char *directory) {
     return 1;
 }
 
-static int curved_data_path(char *path, size_t size, const char *base,
-                            const char *file_name) {
-    int written = snprintf(path, size, "%s/data/curved/%s", base, file_name);
+static int map_data_exists(const char *directory) {
+    return map_data_file_exists(directory, "nodes.csv") &&
+           map_data_file_exists(directory, "edges_curved.csv") &&
+           map_data_file_exists(directory, "edge_geometry_points.csv");
+}
+
+static int map_data_path(char *path, size_t size, const char *base,
+                         const char *file_name) {
+    int written = snprintf(path, size, "%s/%s/%s", base,
+                           MSP_DEFAULT_MAP_DATA_DIRECTORY, file_name);
     return written >= 0 && (size_t)written < size;
 }
 
@@ -242,15 +251,27 @@ static int load_default_data(const char *argv0, Graph *graph, PlaceStore *places
     const char *base = ".";
 
     executable_directory(argv0, executable_dir, sizeof(executable_dir));
-    if (curved_data_exists(executable_dir)) base = executable_dir;
-    if (!curved_data_path(nodes, sizeof(nodes), base, "nodes.csv") ||
-        !curved_data_path(edges, sizeof(edges), base, "edges_curved.csv") ||
-        !curved_data_path(geometry, sizeof(geometry), base,
-                          "edge_geometry_points.csv") ||
-        !curved_data_path(pois, sizeof(pois), base, "pois.csv")) {
+    if (map_data_exists(executable_dir)) base = executable_dir;
+    if (!map_data_path(nodes, sizeof(nodes), base, "nodes.csv") ||
+        !map_data_path(edges, sizeof(edges), base, "edges_curved.csv") ||
+        !map_data_path(geometry, sizeof(geometry), base,
+                       "edge_geometry_points.csv") ||
+        !map_data_path(pois, sizeof(pois), base, "pois.csv")) {
         return MSP_ERROR_CAPACITY;
     }
-    return storage_load_curved_campus(nodes, edges, geometry, pois, graph, places);
+    printf("Loading map data from:\n%s/%s/\n", base,
+           MSP_DEFAULT_MAP_DATA_DIRECTORY);
+    {
+        int status = storage_load_curved_campus(nodes, edges, geometry, pois,
+                                                graph, places);
+        if (status == MSP_OK) {
+            printf("Loaded:\n");
+            printf("nodes: %d\n", graph->node_count);
+            printf("edges: %d\n", graph->edge_count);
+            printf("geometry points: %d\n", graph->geometry_point_count);
+        }
+        return status;
+    }
 }
 
 static int load_application_data(int argc, char *argv[], Graph *graph,

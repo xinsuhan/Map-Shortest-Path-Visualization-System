@@ -1633,13 +1633,13 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     {
         char campus_path[1024];
         int written = snprintf(campus_path, sizeof(campus_path),
-                               "%sdata/curved/campus_map.png",
+                               "%sassets/campus_map.png",
                                GetApplicationDirectory());
         if (written > 0 && (size_t)written < sizeof(campus_path) &&
             FileExists(campus_path)) {
             campus_texture = LoadTexture(campus_path);
-        } else if (FileExists("data/curved/campus_map.png")) {
-            campus_texture = LoadTexture("data/curved/campus_map.png");
+        } else if (FileExists("assets/campus_map.png")) {
+            campus_texture = LoadTexture("assets/campus_map.png");
         }
         if (campus_texture.id != 0) {
             float map_width = campus_texture.width * layout.scale_x;

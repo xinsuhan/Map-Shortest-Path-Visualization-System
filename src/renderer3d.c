@@ -15,11 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define INITIAL_WINDOW_WIDTH 1280
+#define INITIAL_WINDOW_HEIGHT 720
+#define MIN_WINDOW_WIDTH 1100
+#define MIN_WINDOW_HEIGHT 720
 #define NAV_WIDTH 300
-#define MAP_WIDTH (WINDOW_WIDTH - NAV_WIDTH)
-#define MAP_HEIGHT WINDOW_HEIGHT
 #define RENDER_SCALE_X 2.20f
 #define RENDER_SCALE_Z 1.78f
 #define TARGET_WORLD_WIDTH 30.0f
@@ -38,6 +38,16 @@
 #define MAP_ZOOM_MAX 3.00f
 #define MAP_ZOOM_STEP 1.10f
 #define ROAD_NODE_PICK_DISTANCE_PX 52.0f
+
+static int window_width = INITIAL_WINDOW_WIDTH;
+static int window_height = INITIAL_WINDOW_HEIGHT;
+static int map_width = INITIAL_WINDOW_WIDTH - NAV_WIDTH;
+static int map_height = INITIAL_WINDOW_HEIGHT;
+
+#define WINDOW_WIDTH window_width
+#define WINDOW_HEIGHT window_height
+#define MAP_WIDTH map_width
+#define MAP_HEIGHT map_height
 
 static const Color COLOR_MAP_SKY = {225, 237, 231, 255};
 static const Color COLOR_MAP_GROUND = {239, 240, 226, 255};
@@ -1611,8 +1621,14 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_CHOOSE_ROUTE));
     camera = camera_for_view(graph, &layout, &state, state.camera_view);
 
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, ui_text(UI_WINDOW_TITLE));
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
+    InitWindow(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT,
+               ui_text(UI_WINDOW_TITLE));
+    SetWindowMinSize(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
+    window_width = GetScreenWidth();
+    window_height = GetScreenHeight();
+    map_width = window_width - NAV_WIDTH;
+    map_height = window_height;
     load_ui_font();
     {
         char campus_path[1024];
@@ -1659,6 +1675,24 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     }
 
     while (!WindowShouldClose()) {
+        if (!screenshot_mode && IsWindowResized()) {
+            Vector2 map_center = screen_to_map(
+                &state, (Vector2){NAV_WIDTH + MAP_WIDTH * 0.5f,
+                                  MAP_HEIGHT * 0.5f});
+            RenderTexture2D resized_target;
+            window_width = GetScreenWidth();
+            window_height = GetScreenHeight();
+            map_width = window_width - NAV_WIDTH;
+            map_height = window_height;
+            state.map_offset.x = MAP_WIDTH * 0.5f -
+                                 map_center.x * state.map_zoom;
+            state.map_offset.y = MAP_HEIGHT * 0.5f -
+                                 map_center.y * state.map_zoom;
+            clamp_map_view(&state);
+            resized_target = LoadRenderTexture(MAP_WIDTH, MAP_HEIGHT);
+            UnloadRenderTexture(map_target);
+            map_target = resized_target;
+        }
         Vector2 mouse = GetMousePosition();
         int over_map = mouse.x >= NAV_WIDTH && mouse.x < WINDOW_WIDTH;
         int map_ui_hit = is_mouse_over_ui(&state, mouse);

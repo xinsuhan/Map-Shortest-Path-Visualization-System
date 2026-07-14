@@ -31,7 +31,8 @@ typedef enum {
     UI_LEGEND_GREEN,
     UI_LEGEND_WATER,
     UI_LEGEND_ROAD,
-    UI_LEGEND_ROUTE
+    UI_LEGEND_ROUTE,
+    UI_NO_NEARBY_ROAD
 } UiTextId;
 
 const char *ui_text(UiTextId id);

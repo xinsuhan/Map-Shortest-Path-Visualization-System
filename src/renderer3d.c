@@ -37,6 +37,7 @@
 #define MAP_ZOOM_MIN 0.50f
 #define MAP_ZOOM_MAX 3.00f
 #define MAP_ZOOM_STEP 1.10f
+#define ROAD_NODE_PICK_DISTANCE_PX 52.0f
 
 static const Color COLOR_MAP_SKY = {225, 237, 231, 255};
 static const Color COLOR_MAP_GROUND = {239, 240, 226, 255};
@@ -922,6 +923,67 @@ static int pick_node(const Graph *graph, const PlaceStore *places,
     return picked;
 }
 
+static int screen_to_map_position(Vector2 map_mouse, Camera3D camera,
+                                  Vector3 *map_position) {
+    Ray ray;
+    float distance;
+    if (map_position == NULL) return 0;
+    ray = GetScreenToWorldRayEx(map_mouse, camera, MAP_WIDTH, MAP_HEIGHT);
+    if (fabsf(ray.direction.y) <= 0.00001f) return 0;
+    distance = -ray.position.y / ray.direction.y;
+    if (distance < 0.0f) return 0;
+    *map_position = Vector3Add(ray.position,
+                              Vector3Scale(ray.direction, distance));
+    return 1;
+}
+
+static int nearest_walkable_road_node(const Graph *graph,
+                                      const SceneLayout *layout,
+                                      const Camera3D *camera,
+                                      Vector2 map_mouse,
+                                      Vector3 map_position,
+                                      float max_screen_distance) {
+    int edge_index;
+    int picked = -1;
+    float nearest_map_distance_squared = 1.0e30f;
+    if (graph == NULL || layout == NULL || camera == NULL) return -1;
+    for (edge_index = 0; edge_index < graph->edge_count; ++edge_index) {
+        const Edge *edge = &graph->edges[edge_index];
+        int endpoint_ids[2];
+        int endpoint_index;
+        if (!edge->walkable) continue;
+        endpoint_ids[0] = edge->from_id;
+        endpoint_ids[1] = edge->to_id;
+        for (endpoint_index = 0; endpoint_index < 2; ++endpoint_index) {
+            const Node *node = graph_get_node(graph, endpoint_ids[endpoint_index]);
+            Vector3 position;
+            float dx;
+            float dz;
+            float distance_squared;
+            if (node == NULL) continue;
+            position = node_position(node, layout, 0.0f);
+            dx = position.x - map_position.x;
+            dz = position.z - map_position.z;
+            distance_squared = dx * dx + dz * dz;
+            if (distance_squared < nearest_map_distance_squared) {
+                nearest_map_distance_squared = distance_squared;
+                picked = node->id;
+            }
+        }
+    }
+    if (picked >= 0) {
+        const Node *node = graph_get_node(graph, picked);
+        Vector2 screen = GetWorldToScreenEx(node_position(node, layout, 0.0f),
+                                            *camera, MAP_WIDTH, MAP_HEIGHT);
+        float dx = screen.x - map_mouse.x;
+        float dy = screen.y - map_mouse.y;
+        if (dx * dx + dy * dy > max_screen_distance * max_screen_distance) {
+            return -1;
+        }
+    }
+    return picked;
+}
+
 static void run_search(const Graph *graph, RendererState *state) {
     int status;
     double started_at;
@@ -1698,7 +1760,20 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             }
             if (state.map_click_ready ||
                 IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                picked = state.hover_id;
+                Vector2 click_mouse = state.map_click_ready
+                                          ? state.map_click_mouse
+                                          : mouse;
+                Vector2 click_local = screen_to_map(&state, click_mouse);
+                Ray click_ray = GetScreenToWorldRayEx(
+                    click_local, camera, MAP_WIDTH, MAP_HEIGHT);
+                Vector3 map_position;
+                picked = pick_node(graph, places, &layout, click_ray);
+                if (picked < 0 &&
+                    screen_to_map_position(click_local, camera, &map_position)) {
+                    picked = nearest_walkable_road_node(
+                        graph, &layout, &camera, click_local, map_position,
+                        ROAD_NODE_PICK_DISTANCE_PX / state.map_zoom);
+                }
                 if (picked >= 0) {
                     const Place *place = storage_find_place_by_display(places, picked);
                     if (state.map_click_ready) {
@@ -1712,6 +1787,9 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
                     state.has_result = 0;
                     snprintf(state.message, sizeof(state.message), "%s",
                              ui_text(UI_PRESS_START));
+                } else {
+                    snprintf(state.message, sizeof(state.message), "%s",
+                             ui_text(UI_NO_NEARBY_ROAD));
                 }
             }
         }

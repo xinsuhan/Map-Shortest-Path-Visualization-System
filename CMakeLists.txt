@@ -32,6 +32,8 @@ add_custom_command(TARGET map_shortest_path POST_BUILD
             "$<TARGET_FILE_DIR:map_shortest_path>/data"
     COMMENT "Copying map data next to map_shortest_path")
 
+include(CTest)
+
 option(MSP_ENABLE_3D "Build the optional raylib 3D renderer" OFF)
 if(MSP_ENABLE_3D)
     find_package(raylib 5.0 QUIET)
@@ -46,12 +48,19 @@ if(MSP_ENABLE_3D)
             DOWNLOAD_EXTRACT_TIMESTAMP OFF)
         FetchContent_MakeAvailable(raylib)
     endif()
-    target_sources(map_shortest_path PRIVATE src/renderer3d.c src/ui_text.c)
+    target_sources(map_shortest_path PRIVATE src/renderer3d.c src/road_editor.c src/ui_text.c
+        src/renderer_phase1.c src/map_transform.c)
     target_link_libraries(map_shortest_path PRIVATE raylib)
     target_compile_definitions(map_shortest_path PRIVATE MSP_HAS_3D=1)
+    if(BUILD_TESTING)
+        add_executable(test_road_editor tests/test_road_editor.c
+            src/road_editor.c src/map_transform.c)
+        target_include_directories(test_road_editor PRIVATE include)
+        target_link_libraries(test_road_editor PRIVATE raylib)
+        add_test(NAME road_editor COMMAND test_road_editor)
+    endif()
 endif()
 
-include(CTest)
 if(BUILD_TESTING)
     foreach(test_name graph dijkstra astar storage scu_map curved_campus input edge_cases path_result)
         add_executable(test_${test_name} tests/test_${test_name}.c)

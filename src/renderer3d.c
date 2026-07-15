@@ -3,6 +3,7 @@
 #include "astar.h"
 #include "dijkstra.h"
 #include "graph.h"
+#include "road_editor.h"
 #include "storage.h"
 #include "ui_text.h"
 
@@ -357,7 +358,8 @@ static const Node *place_display_node(const Graph *graph, const PlaceStore *plac
     return graph_get_node(graph, place != NULL ? place->display_node_id : fallback_node_id);
 }
 
-static Camera3D camera_for_view(const Graph *graph, const SceneLayout *layout,
+static Camera3D camera_for_view(const Graph *graph, const PlaceStore *places,
+                                const SceneLayout *layout,
                                 const RendererState *state, CameraView view) {
     Camera3D camera = {0};
     Vector3 target = {0.0f, 0.0f, 0.0f};
@@ -375,6 +377,23 @@ static Camera3D camera_for_view(const Graph *graph, const SceneLayout *layout,
             if (position.x > max_x) max_x = position.x;
             if (position.z < min_z) min_z = position.z;
             if (position.z > max_z) max_z = position.z;
+        }
+        {
+            const Node *endpoints[] = {
+                place_display_node(graph, places, state->start_place_id,
+                                   state->start_id),
+                place_display_node(graph, places, state->goal_place_id,
+                                   state->goal_id)
+            };
+            for (i = 0; i < 2; ++i) {
+                Vector3 position;
+                if (endpoints[i] == NULL) continue;
+                position = node_position(endpoints[i], layout, 0.0f);
+                if (position.x < min_x) min_x = position.x;
+                if (position.x > max_x) max_x = position.x;
+                if (position.z < min_z) min_z = position.z;
+                if (position.z > max_z) max_z = position.z;
+            }
         }
         if (min_x <= max_x && min_z <= max_z) {
             target.x = (min_x + max_x) * 0.5f;
@@ -658,6 +677,18 @@ static void draw_route_arrow(Vector3 from, Vector3 to) {
     DrawTriangle3D(left, tip, right, (Color){255, 239, 195, 245});
 }
 
+static void draw_route_segment(Vector3 from, Vector3 to) {
+    Vector3 shadow_from = from;
+    Vector3 shadow_to = to;
+    shadow_from.y = shadow_to.y = PATH_HEIGHT - 0.009f;
+    draw_band(shadow_from, shadow_to, ROUTE_GLOW_WIDTH,
+              Fade(COLOR_ROUTE, 0.18f));
+    shadow_from.y = shadow_to.y = PATH_HEIGHT - 0.004f;
+    draw_band(shadow_from, shadow_to, ROUTE_BORDER_WIDTH,
+              COLOR_ROUTE_SHADOW);
+    draw_band(from, to, ROUTE_CORE_WIDTH, COLOR_ROUTE);
+}
+
 static int road_class(const Edge *edge) {
     if (edge->type == ROAD_MAIN || edge->type == ROAD_BRIDGE) return 2;
     if (edge->type == ROAD_BRANCH) return 1;
@@ -719,13 +750,15 @@ static Vector3 route_geometry_point(const Graph *graph, const Edge *edge, int in
     return world_position(point->x, point->y, layout, PATH_HEIGHT);
 }
 
-static void draw_roads(const Graph *graph, const SceneLayout *layout,
-                       const RendererState *state, int draw_base_network) {
+static void draw_roads(const Graph *graph, const PlaceStore *places,
+                       const SceneLayout *layout, const RendererState *state,
+                       int draw_base_network) {
     int i;
     int pass;
     int route_edge_count = 0;
     int show_path = state->has_result &&
                     state->animation_count >= state->result.visited_count;
+    (void)places;
     if (draw_base_network) {
         for (pass = 0; pass <= 2; ++pass) {
             for (i = 0; i < graph->edge_count; ++i) {
@@ -777,18 +810,10 @@ static void draw_roads(const Graph *graph, const SceneLayout *layout,
                                              direction < 0, layout);
             Vector3 b = route_geometry_point(graph, edge, point_index + 1,
                                              direction < 0, layout);
-            Vector3 shadow_a = a;
-            Vector3 shadow_b = b;
             float dx = b.x - a.x;
             float dz = b.z - a.z;
             float segment_length = sqrtf(dx * dx + dz * dz);
-            shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.009f;
-            draw_band(shadow_a, shadow_b, ROUTE_GLOW_WIDTH,
-                      Fade(COLOR_ROUTE, 0.18f));
-            shadow_a.y = shadow_b.y = PATH_HEIGHT - 0.004f;
-            draw_band(shadow_a, shadow_b, ROUTE_BORDER_WIDTH,
-                      COLOR_ROUTE_SHADOW);
-            draw_band(a, b, ROUTE_CORE_WIDTH, COLOR_ROUTE);
+            draw_route_segment(a, b);
             if (segment_length > longest_segment) {
                 longest_segment = segment_length;
                 arrow_from = a;
@@ -839,6 +864,8 @@ static void draw_search_markers(const Graph *graph, const SceneLayout *layout,
                                 const RendererState *state) {
     int i;
     int shown = 0;
+    if (state->has_result &&
+        state->animation_count >= state->result.visited_count) return;
     for (i = 0; i < graph->node_count; ++i) {
         const Node *node = &graph->nodes[i];
         Vector3 position;
@@ -1035,6 +1062,11 @@ static Rectangle search_box(void) {
     return (Rectangle){NAV_WIDTH + 24.0f, 18.0f, 390.0f, 42.0f};
 }
 
+static Rectangle search_result_box(void) {
+    Rectangle box = search_box();
+    return (Rectangle){box.x, box.y + box.height + 5.0f, box.width, 38.0f};
+}
+
 static Rectangle algorithm_button(int algorithm) {
     return (Rectangle){20.0f + (algorithm - 1) * 127.0f, 254.0f, 123.0f, 34.0f};
 }
@@ -1070,9 +1102,10 @@ static int map_point_visible(Vector2 map_pos) {
 
 static int is_mouse_over_ui(const RendererState *state, Vector2 mouse) {
     int i;
-    (void)state;
     if (mouse.x < (float)NAV_WIDTH) return 1;
     if (CheckCollisionPointRec(mouse, search_box())) return 1;
+    if (state->search_focus && state->search_match_id >= 0 &&
+        CheckCollisionPointRec(mouse, search_result_box())) return 1;
     if (CheckCollisionPointRec(mouse, legend_panel())) return 1;
     for (i = 0; i < 4; ++i) {
         if (CheckCollisionPointRec(mouse, tool_button(i))) return 1;
@@ -1146,10 +1179,12 @@ static void update_map_drag(RendererState *state) {
     if (state->map_dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         Vector2 delta = {mouse.x - state->drag_start_mouse.x,
                          mouse.y - state->drag_start_mouse.y};
-        state->map_offset = (Vector2){state->drag_start_offset.x + delta.x,
-                                      state->drag_start_offset.y + delta.y};
         state->drag_distance = sqrtf(delta.x * delta.x + delta.y * delta.y);
-        clamp_map_view(state);
+        if (state->map_zoom > 1.001f) {
+            state->map_offset = (Vector2){state->drag_start_offset.x + delta.x,
+                                          state->drag_start_offset.y + delta.y};
+            clamp_map_view(state);
+        }
     }
     if (state->map_dragging && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         state->map_dragging = 0;
@@ -1330,7 +1365,7 @@ static void draw_search_ui(const Graph *graph, const PlaceStore *places,
              state->search_query[0] ? (Color){50, 65, 59, 255}
                                     : (Color){132, 143, 138, 255});
     if (state->search_focus && match != NULL) {
-        Rectangle result = {box.x, box.y + box.height + 5, box.width, 38};
+        Rectangle result = search_result_box();
         draw_ui_card(result, COLOR_CARD, (Color){210, 220, 214, 255});
         DrawText(TextFormat("[%02d] %s", match_place ? match_place->id : match->id,
                             ui_place_name(match_place ? match_place->name : match->name)),
@@ -1447,8 +1482,9 @@ static void update_camera_controls(Camera3D *camera, const SceneLayout *layout,
                  GetFrameTime() * 0.52f;
     float wheel = 0.0f;
     Vector3 shift = {0};
-    int dragging = over_map && IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
-    (void)allow_left_drag;
+    int dragging = over_map &&
+                   (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) ||
+                    (allow_left_drag && IsMouseButtonDown(MOUSE_BUTTON_LEFT)));
     if (IsKeyDown(KEY_UP)) shift.z -= move;
     if (IsKeyDown(KEY_DOWN)) shift.z += move;
     if (IsKeyDown(KEY_LEFT)) shift.x -= move;
@@ -1484,12 +1520,17 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     Texture2D campus_texture = {0};
     Model campus_model = {0};
     Vector3 campus_position = {0};
+    RoadEditor editor;
+    MapTransform map_transform = {0};
+    int image_width = 0;
+    int image_height = 0;
     int has_campus_map = 0;
     int screenshot_mode = getenv("MSP_3D_SCREENSHOT") != NULL;
     int frame_count = 0;
     if (graph == NULL || graph->node_count <= 0 || places == NULL ||
         places->place_count <= 0) return;
     layout = build_scene_layout(graph);
+    road_editor_init(&editor);
     state.start_id = -1;
     state.goal_id = -1;
     state.start_place_id = -1;
@@ -1503,7 +1544,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     state.camera_view = VIEW_NAVIGATION;
     reset_map_view(&state);
     snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_CHOOSE_ROUTE));
-    camera = camera_for_view(graph, &layout, &state, state.camera_view);
+    camera = camera_for_view(graph, places, &layout, &state, state.camera_view);
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, ui_text(UI_WINDOW_TITLE));
@@ -1511,13 +1552,13 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
     {
         char campus_path[1024];
         int written = snprintf(campus_path, sizeof(campus_path),
-                               "%sdata/curved/campus_map.png",
+                               "%sdata/curved/campus_map_new.png",
                                GetApplicationDirectory());
         if (written > 0 && (size_t)written < sizeof(campus_path) &&
             FileExists(campus_path)) {
             campus_texture = LoadTexture(campus_path);
-        } else if (FileExists("data/curved/campus_map.png")) {
-            campus_texture = LoadTexture("data/curved/campus_map.png");
+        } else if (FileExists("data/curved/campus_map_new.png")) {
+            campus_texture = LoadTexture("data/curved/campus_map_new.png");
         }
         if (campus_texture.id != 0) {
             float map_width = campus_texture.width * layout.scale_x;
@@ -1529,6 +1570,11 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             SetMaterialTexture(&campus_model.materials[0], MATERIAL_MAP_DIFFUSE,
                                campus_texture);
             has_campus_map = 1;
+            image_width = campus_texture.width;
+            image_height = campus_texture.height;
+            map_transform = (MapTransform){layout.scale_x, layout.scale_z,
+                                           -layout.center_x * layout.scale_x,
+                                           -layout.center_z * layout.scale_z, 0};
         }
     }
     map_target = LoadRenderTexture(MAP_WIDTH, MAP_HEIGHT);
@@ -1549,7 +1595,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         state.animation_count = state.result.visited_count;
         snprintf(state.message, sizeof(state.message), "%s", ui_text(UI_ROUTE_READY));
         state.camera_view = VIEW_OVERVIEW;
-        camera = camera_for_view(graph, &layout, &state, state.camera_view);
+        camera = camera_for_view(graph, places, &layout, &state, state.camera_view);
     }
 
     while (!WindowShouldClose()) {
@@ -1557,12 +1603,16 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         int over_map = mouse.x >= NAV_WIDTH && mouse.x < WINDOW_WIDTH;
         int map_ui_hit = is_mouse_over_ui(&state, mouse);
         int camera_changed = 0;
+        int accept_search = 0;
         int picked;
         int i;
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             if (CheckCollisionPointRec(mouse, search_box())) {
                 state.search_focus = 1;
+            } else if (state.search_focus && state.search_match_id >= 0 &&
+                       CheckCollisionPointRec(mouse, search_result_box())) {
+                accept_search = 1;
             } else {
                 state.search_focus = 0;
             }
@@ -1599,8 +1649,9 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
 
         update_search(places, &state);
         update_map_zoom(&state);
-        update_map_drag(&state);
-        if (state.search_focus && IsKeyPressed(KEY_ENTER) && state.search_match_id >= 0) {
+        if (!editor.active) update_map_drag(&state);
+        if (state.search_focus && state.search_match_id >= 0 &&
+            (IsKeyPressed(KEY_ENTER) || accept_search)) {
             const Node *match = graph_get_node(graph, state.search_match_id);
             if (state.start_id < 0) {
                 const Place *place = storage_find_place(
@@ -1638,15 +1689,55 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         if (IsKeyPressed(KEY_HOME) || IsKeyPressed(KEY_F1)) {
             state.camera_view = VIEW_NAVIGATION; camera_changed = 1;
         }
-        if (IsKeyPressed(KEY_F2)) { state.camera_view = VIEW_OVERVIEW; camera_changed = 1; }
-        if (IsKeyPressed(KEY_F3)) { state.camera_view = VIEW_PATH; camera_changed = 1; }
+        if (IsKeyPressed(KEY_F2)) {
+            road_editor_toggle(&editor);
+            state.map_dragging = 0;
+            state.map_click_ready = 0;
+            state.camera_view = VIEW_OVERVIEW;
+            camera_changed = 1;
+        }
+        if (IsKeyPressed(KEY_F3) && editor.active) editor.debug_visible = !editor.debug_visible;
         if (!state.search_focus && IsKeyPressed(KEY_R)) {
             reset_map_view(&state);
         }
-        if (camera_changed) camera = camera_for_view(graph, &layout, &state, state.camera_view);
+        if (camera_changed) {
+            camera = camera_for_view(graph, places, &layout, &state,
+                                     state.camera_view);
+        }
+
+        if (editor.active && has_campus_map && over_map && !map_ui_hit) {
+            Vector2 local_mouse = screen_to_map(&state, mouse);
+            Ray ray = GetScreenToWorldRayEx(local_mouse, camera, MAP_WIDTH, MAP_HEIGHT);
+            float ray_t = fabsf(ray.direction.y) > 1e-6f
+                              ? -ray.position.y / ray.direction.y : -1.0f;
+            Vector3 hit_point = Vector3Add(ray.position,
+                                           Vector3Scale(ray.direction, ray_t));
+            MapPoint map_point = {0};
+            int valid = ray_t >= 0.0f &&
+                        world_to_map(hit_point, &map_transform, &map_point) &&
+                        map_point.x >= 0 && map_point.x <= image_width &&
+                        map_point.y >= 0 && map_point.y <= image_height;
+            road_editor_update_cursor(&editor, map_point, valid);
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) road_editor_add_control_point(&editor);
+            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) road_editor_finish_edge(&editor);
+        } else if (editor.active) {
+            road_editor_update_cursor(&editor, (MapPoint){0}, 0);
+        }
+        if (editor.active && !state.search_focus) {
+            if (IsKeyPressed(KEY_N)) road_editor_add_node(&editor);
+            if (IsKeyPressed(KEY_Z)) road_editor_undo(&editor);
+            if (IsKeyPressed(KEY_ESCAPE)) road_editor_cancel(&editor);
+            if (IsKeyPressed(KEY_E)) road_editor_finish_edge(&editor);
+            if (IsKeyPressed(KEY_S)) {
+                snprintf(editor.message, sizeof(editor.message), "%s",
+                         road_editor_save(&editor, "data/editor")
+                             ? "Saved to data/editor"
+                             : "Save failed: data/editor");
+            }
+        }
 
         state.hover_id = -1;
-        if (over_map && !map_ui_hit) {
+        if (!editor.active && over_map && !map_ui_hit) {
             Vector2 local_mouse = screen_to_map(&state, mouse);
             if (map_point_visible(local_mouse)) {
                 state.hover_id = pick_node(graph, places, &layout,
@@ -1672,7 +1763,9 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             }
         }
         update_camera_controls(&camera, &layout, over_map && !map_ui_hit,
-                               state.hover_id < 0);
+                               state.map_dragging &&
+                                   state.drag_distance >= MAP_DRAG_THRESHOLD &&
+                                   state.map_zoom <= 1.001f);
         update_animation(&state);
 
         BeginTextureMode(map_target);
@@ -1682,11 +1775,12 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
             DrawModel(campus_model, campus_position, 1.0f, WHITE);
         }
         draw_environment(&layout, has_campus_map);
-        draw_roads(graph, &layout, &state, !has_campus_map);
+        draw_roads(graph, places, &layout, &state, !has_campus_map);
         for (i = 0; i < graph->node_count; ++i) draw_node(&graph->nodes[i], &layout, &state);
         draw_trees(&layout);
         draw_search_markers(graph, &layout, &state);
         draw_selection_markers(graph, places, &layout, &state);
+        road_editor_draw_world(&editor, &map_transform);
         EndMode3D();
         draw_labels(graph, places, &layout, &camera, &state);
         draw_screen_selection_markers(graph, places, &layout, &camera, &state);
@@ -1707,6 +1801,7 @@ void renderer3d_run(const Graph *graph, const PlaceStore *places) {
         draw_legend();
         draw_map_tools(&state);
         draw_map_view_hint();
+        road_editor_draw_overlay(&editor, ui_font);
         if (screenshot_mode) {
             EndTextureMode();
             BeginDrawing();

@@ -401,28 +401,6 @@ static int load_curved_geometry(const char *file_path, Graph *graph,
     return graph->geometry_point_count > 0 ? MSP_OK : MSP_ERROR_FORMAT;
 }
 
-static const char *curved_poi_display_name(const char *external_id) {
-    if (strcmp(external_id, "POI01") == 0) return "Mingyuan Lake";
-    if (strcmp(external_id, "POI02") == 0) return "Arts College";
-    if (strcmp(external_id, "POI03") == 0) return "Campus Stadium";
-    if (strcmp(external_id, "POI04") == 0) return "West Dormitory";
-    if (strcmp(external_id, "POI05") == 0) return "East Dormitory";
-    if (strcmp(external_id, "POI06") == 0) return "Disaster Reconstruction and Management College";
-    if (strcmp(external_id, "POI07") == 0) return "Southwest Gate";
-    if (strcmp(external_id, "POI08") == 0) return "Library";
-    if (strcmp(external_id, "POI09") == 0) return "Architecture and Environment College Building";
-    if (strcmp(external_id, "POI10") == 0) return "Second Basic Building";
-    if (strcmp(external_id, "POI11") == 0) return "East Canteen";
-    if (strcmp(external_id, "POI12") == 0) return "West Canteen";
-    if (strcmp(external_id, "POI13") == 0) return "Gymnasium";
-    if (strcmp(external_id, "POI14") == 0) return "Liberal Arts Buildings";
-    if (strcmp(external_id, "POI15") == 0) return "Aerospace Building";
-    if (strcmp(external_id, "POI16") == 0) return "First Teaching Building";
-    if (strcmp(external_id, "POI17") == 0) return "Comprehensive and First Basic Buildings";
-    if (strcmp(external_id, "POI18") == 0) return "Administration Building";
-    return external_id;
-}
-
 static NodeType curved_poi_node_type(const char *category) {
     if (strcmp(category, "lake") == 0) return NODE_LAKE;
     if (strcmp(category, "sports") == 0) return NODE_SQUARE;
@@ -494,7 +472,7 @@ static int load_curved_pois(const char *file_path, Graph *graph,
         memset(&node, 0, sizeof(node));
         set_node_defaults(&node);
         node.id = graph->node_count;
-        snprintf(node.name, sizeof(node.name), "%s", curved_poi_display_name(fields[0]));
+        snprintf(node.name, sizeof(node.name), "%s", fields[1]);
         node.x = x;
         node.y = y;
         node.type = curved_poi_node_type(fields[4]);

@@ -2,6 +2,7 @@ param(
     [string[]]$EdgeId = @(),
     [double]$LengthTolerance = 0.15,
     [int]$ClearancePx = 8,
+    [switch]$PixelObstacleCheck,
     [switch]$SkipNodeCheck
 )
 
@@ -37,7 +38,7 @@ if ($EdgeId.Count -gt 0) {
 }
 
 Add-Type -AssemblyName System.Drawing
-$mapPath = Join-Path $dataDir "campus_map.png"
+$mapPath = Join-Path $dataDir "campus_map_new.png"
 $map = [System.Drawing.Bitmap]::new($mapPath)
 
 function Get-Distance([double]$x1, [double]$y1, [double]$x2, [double]$y2) {
@@ -141,9 +142,16 @@ foreach ($edge in $edges) {
     $obstacleHit = $null
     $allowWater = $edge.kind -eq "bridge"
     for ($i = 0; $i + 1 -lt $points.Count; $i++) {
+        foreach ($point in @($points[$i], $points[$i + 1])) {
+            if ([double]$point.x -lt 0 -or [double]$point.y -lt 0 -or
+                [double]$point.x -ge $map.Width -or [double]$point.y -ge $map.Height) {
+                $warnings.Add("$($edge.id) has a geometry point outside the map")
+                break
+            }
+        }
         $curvedLength += Get-Distance ([double]$points[$i].x) ([double]$points[$i].y) `
                                       ([double]$points[$i + 1].x) ([double]$points[$i + 1].y)
-        if ($walkable -eq 1 -and $null -eq $obstacleHit) {
+        if ($PixelObstacleCheck -and $walkable -eq 1 -and $null -eq $obstacleHit) {
             $obstacleHit = Test-SegmentObstacle $points[$i] $points[$i + 1] $allowWater
         }
     }
@@ -160,7 +168,7 @@ foreach ($edge in $edges) {
     }
 }
 
-if (-not $SkipNodeCheck) {
+if ($PixelObstacleCheck -and -not $SkipNodeCheck) {
     foreach ($node in $nodes) {
         $x = [int][Math]::Round([double]$node.x)
         $y = [int][Math]::Round([double]$node.y)

@@ -25,6 +25,16 @@ static const Place *find_place_by_name(const PlaceStore *places, const char *nam
     return NULL;
 }
 
+static int path_contains_external_node(const Graph *graph, const PathResult *result,
+                                       const char *external_id) {
+    int i;
+    for (i = 0; i < result->path_length; ++i) {
+        const Node *node = graph_get_node(graph, result->path[i]);
+        if (node != NULL && strcmp(node->name, external_id) == 0) return 1;
+    }
+    return 0;
+}
+
 static void assert_path_uses_only_walkable_edges(const Graph *graph,
                                                  const PathResult *result) {
     int path_index;
@@ -65,10 +75,10 @@ int main(void) {
     }
     assert(load_status == MSP_OK);
 
-    assert(graph.node_count == 122);
-    assert(graph.edge_count == 178);
-    assert(places.place_count == 18);
-    assert(graph.geometry_point_count == 801);
+    assert(graph.node_count == 124);
+    assert(graph.edge_count == 153);
+    assert(places.place_count == 38);
+    assert(graph.geometry_point_count == 373);
     assert(graph.weights_in_meters == 1);
 
     for (i = 0; i < graph.edge_count; ++i) {
@@ -125,21 +135,20 @@ int main(void) {
 
     {
         static const char *const expected_names[] = {
-            "Mingyuan Lake", "Arts College", "Campus Stadium", "West Dormitory",
-            "East Dormitory", "Disaster Reconstruction and Management College",
-            "Southwest Gate", "Library", "Architecture and Environment College Building",
-            "Second Basic Building", "East Canteen", "West Canteen", "Gymnasium",
-            "Liberal Arts Buildings", "Aerospace Building", "First Teaching Building",
-            "Comprehensive and First Basic Buildings", "Administration Building"
+            "明远湖", "行政楼", "图书馆", "学术交流中心", "第一教学楼",
+            "第二教学楼", "实践楼", "礼仪堂", "南门", "体育馆",
+            "体育运动场", "游泳馆", "江安校区图书馆与博物馆", "文科楼",
+            "学术文化交流中心", "东园一舍与二舍", "东园六舍", "东园七舍",
+            "东园八舍", "东园留学生公寓与教师公寓", "教职工楼",
+            "灾后重建与管理学院", "建筑与环境学院楼", "工程训练中心",
+            "创新创业产业园", "东实学生食堂", "西园宿舍区", "西园食堂",
+            "学生服务中心", "西南门", "西区体育场", "多学科交叉楼",
+            "国家重点工程研究实验基地", "计算理论与未来研究院",
+            "多学科交叉研究机构大楼", "江安新能源研究院", "东园食堂",
+            "综合楼与一基楼"
         };
-        static const char *const removed_names[] = {
-            "East Teaching Area", "First Basic Building", "Engineering Training Center",
-            "Arts and Sciences College", "Comprehensive Building", "Campus Hospital",
-            "Knowledge Square"
-        };
-        const Place *arts = find_place_by_name(&places, "Arts College");
-        const Place *combined = find_place_by_name(
-            &places, "Comprehensive and First Basic Buildings");
+        const Place *library = find_place_by_name(&places, "图书馆");
+        const Place *combined = find_place_by_name(&places, "综合楼与一基楼");
         const Node *display;
         const Node *entrance;
         size_t name_index;
@@ -148,27 +157,43 @@ int main(void) {
              ++name_index) {
             assert(find_place_by_name(&places, expected_names[name_index]) != NULL);
         }
-        for (name_index = 0;
-             name_index < sizeof(removed_names) / sizeof(removed_names[0]);
-             ++name_index) {
-            assert(find_place_by_name(&places, removed_names[name_index]) == NULL);
-        }
-        assert(arts != NULL);
-        display = graph_get_node(&graph, arts->display_node_id);
-        entrance = graph_get_node(&graph, arts->entrance_node_id);
+        assert(library != NULL);
+        display = graph_get_node(&graph, library->display_node_id);
+        entrance = graph_get_node(&graph, library->entrance_node_id);
         assert(display != NULL && entrance != NULL);
-        assert(fabs(display->x - 580.0) < MSP_EPSILON);
-        assert(fabs(display->y - 710.0) < MSP_EPSILON);
-        assert(fabs(entrance->x - 580.0) < MSP_EPSILON);
-        assert(fabs(entrance->y - 670.0) < MSP_EPSILON);
+        assert(fabs(display->x - 735.0) < MSP_EPSILON);
+        assert(fabs(display->y - 385.0) < MSP_EPSILON);
+        assert(fabs(entrance->x - 735.0) < MSP_EPSILON);
+        assert(fabs(entrance->y - 302.0) < MSP_EPSILON);
         assert(combined != NULL);
         display = graph_get_node(&graph, combined->display_node_id);
         entrance = graph_get_node(&graph, combined->entrance_node_id);
         assert(display != NULL && entrance != NULL);
-        assert(fabs(display->x - 1040.0) < MSP_EPSILON);
-        assert(fabs(display->y - 790.0) < MSP_EPSILON);
-        assert(fabs(entrance->x - 1050.0) < MSP_EPSILON);
-        assert(fabs(entrance->y - 806.0) < MSP_EPSILON);
+        assert(fabs(display->x - 950.0) < MSP_EPSILON);
+        assert(fabs(display->y - 535.0) < MSP_EPSILON);
+        assert(fabs(entrance->x - 895.0) < MSP_EPSILON);
+        assert(fabs(entrance->y - 520.0) < MSP_EPSILON);
+    }
+
+    /* Regression: the route that previously circled through the whole west
+     * dormitory must use the east/central roads visible on the new map. */
+    {
+        const Place *start = find_place_by_name(&places, "建筑与环境学院楼");
+        const Place *goal = find_place_by_name(&places, "综合楼与一基楼");
+        assert(start != NULL && goal != NULL);
+        assert(dijkstra_find_path(&graph, start->entrance_node_id,
+                                  goal->entrance_node_id,
+                                  &dijkstra_result) == MSP_OK);
+        assert(astar_find_path(&graph, start->entrance_node_id,
+                               goal->entrance_node_id,
+                               &astar_result) == MSP_OK);
+        assert(dijkstra_result.found && astar_result.found);
+        assert(dijkstra_result.total_distance < 700.0);
+        assert(fabs(dijkstra_result.total_distance - astar_result.total_distance) < 1.0e-6);
+        assert(!path_contains_external_node(&graph, &dijkstra_result, "J02"));
+        assert(!path_contains_external_node(&graph, &dijkstra_result, "J27"));
+        assert_path_uses_only_walkable_edges(&graph, &dijkstra_result);
+        assert_path_uses_only_walkable_edges(&graph, &astar_result);
     }
 
     for (i = 0; i < places.place_count; ++i) {

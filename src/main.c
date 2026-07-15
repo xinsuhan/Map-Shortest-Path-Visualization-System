@@ -7,6 +7,7 @@
 
 #ifdef MSP_HAS_3D
 #include "renderer3d.h"
+#include "renderer_phase1.h"
 #endif
 
 #include <stdio.h>
@@ -194,6 +195,10 @@ static int direct_3d_requested(int argc, char *argv[]) {
     return argc == 2 && strcmp(argv[1], "--3d") == 0;
 }
 
+static int phase1_requested(int argc, char *argv[]) {
+    return argc == 2 && strcmp(argv[1], "--phase1") == 0;
+}
+
 static void executable_directory(const char *argv0, char *directory, size_t size) {
     const char *slash;
     const char *backslash;
@@ -279,6 +284,16 @@ int main(int argc, char *argv[]) {
     int choice;
     int load_status;
     int open_3d_directly = direct_3d_requested(argc, argv);
+
+    if (phase1_requested(argc, argv)) {
+#ifdef MSP_HAS_3D
+        renderer_phase1_run();
+        return 0;
+#else
+        fprintf(stderr, "Phase 1 viewer requires -DMSP_ENABLE_3D=ON.\n");
+        return 1;
+#endif
+    }
 
     visualization_initialize_console();
     load_status = load_application_data(argc, argv, &graph, &places);

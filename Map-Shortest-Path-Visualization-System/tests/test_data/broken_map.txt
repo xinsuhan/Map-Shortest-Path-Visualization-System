@@ -1,0 +1,5 @@
+NODES 2
+1 A 0 0
+1 DuplicateNode 1 1
+EDGES 1
+1 2 not-a-number

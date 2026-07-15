@@ -1,0 +1,3 @@
+id,name,alias,entrance_node_id,category
+1,Start Place,Start,1,gate
+2,Goal Place,Goal,3,teaching

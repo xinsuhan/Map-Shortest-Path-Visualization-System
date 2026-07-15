@@ -1,0 +1,3801 @@
+{
+  "metadata": {
+    "source_image": "campus_map_new.png",
+    "image_width": 1448,
+    "image_height": 1086,
+    "meters_per_pixel": 0.8,
+    "routing_geometry_is_render_geometry": true
+  },
+  "nodes": [
+    {
+      "id": "J01",
+      "x": 195,
+      "y": 900,
+      "nx": 0.134669,
+      "ny": 0.828729,
+      "name": "西南门入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J02",
+      "x": 205,
+      "y": 850,
+      "nx": 0.141575,
+      "ny": 0.782689,
+      "name": "西园南路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J03",
+      "x": 205,
+      "y": 790,
+      "nx": 0.141575,
+      "ny": 0.72744,
+      "name": "西园四路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J04",
+      "x": 205,
+      "y": 730,
+      "nx": 0.141575,
+      "ny": 0.672192,
+      "name": "西园三路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J05",
+      "x": 205,
+      "y": 675,
+      "nx": 0.141575,
+      "ny": 0.621547,
+      "name": "西园二路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J06",
+      "x": 205,
+      "y": 620,
+      "nx": 0.141575,
+      "ny": 0.570902,
+      "name": "西园一路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J07",
+      "x": 205,
+      "y": 575,
+      "nx": 0.141575,
+      "ny": 0.529466,
+      "name": "西园北路西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J08",
+      "x": 165,
+      "y": 550,
+      "nx": 0.11395,
+      "ny": 0.506446,
+      "name": "长城路中段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J09",
+      "x": 160,
+      "y": 470,
+      "nx": 0.110497,
+      "ny": 0.432781,
+      "name": "长城路北段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J10",
+      "x": 190,
+      "y": 420,
+      "nx": 0.131215,
+      "ny": 0.38674,
+      "name": "西北环路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J11",
+      "x": 245,
+      "y": 420,
+      "nx": 0.169199,
+      "ny": 0.38674,
+      "name": "西北环路中段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J12",
+      "x": 315,
+      "y": 430,
+      "nx": 0.217541,
+      "ny": 0.395948,
+      "name": "西北环路东段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J13",
+      "x": 390,
+      "y": 435,
+      "nx": 0.269337,
+      "ny": 0.400552,
+      "name": "安宁河西北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J14",
+      "x": 450,
+      "y": 440,
+      "nx": 0.310773,
+      "ny": 0.405157,
+      "name": "明远大道西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J32",
+      "x": 285,
+      "y": 850,
+      "nx": 0.196823,
+      "ny": 0.782689,
+      "name": "西园南路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J33",
+      "x": 400,
+      "y": 825,
+      "nx": 0.276243,
+      "ny": 0.759669,
+      "name": "西园南路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J34",
+      "x": 285,
+      "y": 790,
+      "nx": 0.196823,
+      "ny": 0.72744,
+      "name": "西园四路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J35",
+      "x": 405,
+      "y": 770,
+      "nx": 0.279696,
+      "ny": 0.709024,
+      "name": "西园四路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J36",
+      "x": 470,
+      "y": 765,
+      "nx": 0.324586,
+      "ny": 0.70442,
+      "name": "西园东南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J37",
+      "x": 285,
+      "y": 730,
+      "nx": 0.196823,
+      "ny": 0.672192,
+      "name": "西园三路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J38",
+      "x": 405,
+      "y": 715,
+      "nx": 0.279696,
+      "ny": 0.658379,
+      "name": "西园三路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J39",
+      "x": 470,
+      "y": 700,
+      "nx": 0.324586,
+      "ny": 0.644567,
+      "name": "西园东三口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J40",
+      "x": 285,
+      "y": 675,
+      "nx": 0.196823,
+      "ny": 0.621547,
+      "name": "西园二路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J41",
+      "x": 410,
+      "y": 675,
+      "nx": 0.283149,
+      "ny": 0.621547,
+      "name": "西园二路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J42",
+      "x": 450,
+      "y": 680,
+      "nx": 0.310773,
+      "ny": 0.626151,
+      "name": "西园东二口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J43",
+      "x": 285,
+      "y": 620,
+      "nx": 0.196823,
+      "ny": 0.570902,
+      "name": "西园一路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J44",
+      "x": 410,
+      "y": 620,
+      "nx": 0.283149,
+      "ny": 0.570902,
+      "name": "西园一路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J45",
+      "x": 450,
+      "y": 630,
+      "nx": 0.310773,
+      "ny": 0.58011,
+      "name": "长桥西端",
+      "kind": "intersection"
+    },
+    {
+      "id": "J46",
+      "x": 285,
+      "y": 575,
+      "nx": 0.196823,
+      "ny": 0.529466,
+      "name": "西园北路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J47",
+      "x": 405,
+      "y": 575,
+      "nx": 0.279696,
+      "ny": 0.529466,
+      "name": "西园北路东口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J48",
+      "x": 450,
+      "y": 580,
+      "nx": 0.310773,
+      "ny": 0.53407,
+      "name": "学生服务中心路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J15",
+      "x": 473,
+      "y": 375,
+      "nx": 0.326657,
+      "ny": 0.345304,
+      "name": "明远大道西弯",
+      "kind": "intersection"
+    },
+    {
+      "id": "J16",
+      "x": 540,
+      "y": 335,
+      "nx": 0.372928,
+      "ny": 0.308471,
+      "name": "明远大道西段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J17",
+      "x": 630,
+      "y": 320,
+      "nx": 0.435083,
+      "ny": 0.294659,
+      "name": "明远大道中西段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J18",
+      "x": 735,
+      "y": 302,
+      "nx": 0.507597,
+      "ny": 0.278085,
+      "name": "明远大道中段",
+      "kind": "intersection"
+    },
+    {
+      "id": "J19",
+      "x": 842,
+      "y": 297,
+      "nx": 0.581492,
+      "ny": 0.273481,
+      "name": "行政楼路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J20",
+      "x": 910,
+      "y": 360,
+      "nx": 0.628453,
+      "ny": 0.331492,
+      "name": "中央主路北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J21",
+      "x": 980,
+      "y": 420,
+      "nx": 0.676796,
+      "ny": 0.38674,
+      "name": "中央主路中口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J22",
+      "x": 1045,
+      "y": 480,
+      "nx": 0.721685,
+      "ny": 0.441989,
+      "name": "中央主路南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J23",
+      "x": 1105,
+      "y": 540,
+      "nx": 0.763122,
+      "ny": 0.497238,
+      "name": "体育区西南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J24",
+      "x": 1185,
+      "y": 580,
+      "nx": 0.81837,
+      "ny": 0.53407,
+      "name": "东南门路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J25",
+      "x": 1230,
+      "y": 655,
+      "nx": 0.849448,
+      "ny": 0.603131,
+      "name": "东实北路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J26",
+      "x": 1250,
+      "y": 735,
+      "nx": 0.86326,
+      "ny": 0.676796,
+      "name": "东实南路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J27",
+      "x": 450,
+      "y": 850,
+      "nx": 0.310773,
+      "ny": 0.782689,
+      "name": "江安大道南段西",
+      "kind": "intersection"
+    },
+    {
+      "id": "J28",
+      "x": 610,
+      "y": 815,
+      "nx": 0.421271,
+      "ny": 0.75046,
+      "name": "江安大道南段中西",
+      "kind": "intersection"
+    },
+    {
+      "id": "J29",
+      "x": 760,
+      "y": 775,
+      "nx": 0.524862,
+      "ny": 0.713628,
+      "name": "南门西路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J30",
+      "x": 900,
+      "y": 735,
+      "nx": 0.621547,
+      "ny": 0.676796,
+      "name": "南门东路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J31",
+      "x": 1035,
+      "y": 685,
+      "nx": 0.714779,
+      "ny": 0.630755,
+      "name": "江安大道南段东",
+      "kind": "intersection"
+    },
+    {
+      "id": "J49",
+      "x": 610,
+      "y": 650,
+      "nx": 0.421271,
+      "ny": 0.598527,
+      "name": "长桥东端",
+      "kind": "intersection"
+    },
+    {
+      "id": "J50",
+      "x": 690,
+      "y": 635,
+      "nx": 0.476519,
+      "ny": 0.584715,
+      "name": "实践楼西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J51",
+      "x": 785,
+      "y": 600,
+      "nx": 0.542127,
+      "ny": 0.552486,
+      "name": "学术交流中心南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J52",
+      "x": 820,
+      "y": 535,
+      "nx": 0.566298,
+      "ny": 0.492634,
+      "name": "中央广场西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J53",
+      "x": 875,
+      "y": 500,
+      "nx": 0.604282,
+      "ny": 0.460405,
+      "name": "一教西北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J54",
+      "x": 970,
+      "y": 445,
+      "nx": 0.66989,
+      "ny": 0.409761,
+      "name": "文科区西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J55",
+      "x": 1060,
+      "y": 390,
+      "nx": 0.732044,
+      "ny": 0.359116,
+      "name": "体育馆西北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J56",
+      "x": 1140,
+      "y": 320,
+      "nx": 0.787293,
+      "ny": 0.294659,
+      "name": "游泳馆北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J57",
+      "x": 650,
+      "y": 710,
+      "nx": 0.448895,
+      "ny": 0.653775,
+      "name": "南桥西端",
+      "kind": "intersection"
+    },
+    {
+      "id": "J58",
+      "x": 780,
+      "y": 670,
+      "nx": 0.538674,
+      "ny": 0.616943,
+      "name": "南桥东端",
+      "kind": "intersection"
+    },
+    {
+      "id": "J59",
+      "x": 880,
+      "y": 630,
+      "nx": 0.607735,
+      "ny": 0.58011,
+      "name": "礼仪堂西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J60",
+      "x": 980,
+      "y": 585,
+      "nx": 0.676796,
+      "ny": 0.538674,
+      "name": "二教西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J61",
+      "x": 1085,
+      "y": 530,
+      "nx": 0.749309,
+      "ny": 0.488029,
+      "name": "博物馆西口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J62",
+      "x": 785,
+      "y": 85,
+      "nx": 0.542127,
+      "ny": 0.078269,
+      "name": "东园北入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J63",
+      "x": 790,
+      "y": 150,
+      "nx": 0.54558,
+      "ny": 0.138122,
+      "name": "东园西纵路北",
+      "kind": "intersection"
+    },
+    {
+      "id": "J64",
+      "x": 820,
+      "y": 220,
+      "nx": 0.566298,
+      "ny": 0.202578,
+      "name": "东园西纵路中",
+      "kind": "intersection"
+    },
+    {
+      "id": "J65",
+      "x": 845,
+      "y": 280,
+      "nx": 0.583564,
+      "ny": 0.257827,
+      "name": "东园西纵路南",
+      "kind": "intersection"
+    },
+    {
+      "id": "J66",
+      "x": 900,
+      "y": 205,
+      "nx": 0.621547,
+      "ny": 0.188766,
+      "name": "东园中路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J67",
+      "x": 955,
+      "y": 185,
+      "nx": 0.65953,
+      "ny": 0.17035,
+      "name": "东园东路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J68",
+      "x": 1010,
+      "y": 260,
+      "nx": 0.697514,
+      "ny": 0.239411,
+      "name": "文科楼北口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J69",
+      "x": 1100,
+      "y": 275,
+      "nx": 0.759669,
+      "ny": 0.253223,
+      "name": "学术文化中心路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J70",
+      "x": 1195,
+      "y": 230,
+      "nx": 0.825276,
+      "ny": 0.211786,
+      "name": "东校门",
+      "kind": "intersection"
+    },
+    {
+      "id": "J71",
+      "x": 75,
+      "y": 155,
+      "nx": 0.051796,
+      "ny": 0.142726,
+      "name": "西北门内口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J72",
+      "x": 185,
+      "y": 150,
+      "nx": 0.127762,
+      "ny": 0.138122,
+      "name": "交叉学科西路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J73",
+      "x": 285,
+      "y": 155,
+      "nx": 0.196823,
+      "ny": 0.142726,
+      "name": "交叉学科中路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J74",
+      "x": 390,
+      "y": 170,
+      "nx": 0.269337,
+      "ny": 0.156538,
+      "name": "交叉学科东路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J75",
+      "x": 390,
+      "y": 260,
+      "nx": 0.269337,
+      "ny": 0.239411,
+      "name": "未来研究院南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J76",
+      "x": 250,
+      "y": 260,
+      "nx": 0.172652,
+      "ny": 0.239411,
+      "name": "交叉研究楼南口",
+      "kind": "intersection"
+    },
+    {
+      "id": "J77",
+      "x": 140,
+      "y": 290,
+      "nx": 0.096685,
+      "ny": 0.267035,
+      "name": "新能源研究院路口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P01",
+      "x": 805,
+      "y": 520,
+      "nx": 0.555939,
+      "ny": 0.478821,
+      "name": "明远湖东入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P02",
+      "x": 895,
+      "y": 520,
+      "nx": 0.618094,
+      "ny": 0.478821,
+      "name": "综合楼入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P03",
+      "x": 805,
+      "y": 135,
+      "nx": 0.555939,
+      "ny": 0.124309,
+      "name": "教职工楼入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P04",
+      "x": 910,
+      "y": 220,
+      "nx": 0.628453,
+      "ny": 0.202578,
+      "name": "东园一二舍入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P05",
+      "x": 925,
+      "y": 210,
+      "nx": 0.638812,
+      "ny": 0.19337,
+      "name": "东园食堂入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P06",
+      "x": 1165,
+      "y": 245,
+      "nx": 0.804558,
+      "ny": 0.225599,
+      "name": "留学生公寓入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P07",
+      "x": 1240,
+      "y": 245,
+      "nx": 0.856354,
+      "ny": 0.225599,
+      "name": "灾后重建学院入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P08",
+      "x": 1280,
+      "y": 720,
+      "nx": 0.883978,
+      "ny": 0.662983,
+      "name": "东实食堂入口",
+      "kind": "intersection"
+    },
+    {
+      "id": "P09",
+      "x": 270,
+      "y": 175,
+      "nx": 0.186464,
+      "ny": 0.161142,
+      "name": "重点实验基地入口",
+      "kind": "intersection"
+    }
+  ],
+  "edges": [
+    {
+      "id": "E001",
+      "source": "J01",
+      "target": "J02",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 40.792156,
+      "geometry": [
+        [
+          195,
+          900
+        ],
+        [
+          205,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "E002",
+      "source": "J02",
+      "target": "J03",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 48.0,
+      "geometry": [
+        [
+          205,
+          850
+        ],
+        [
+          205,
+          790
+        ]
+      ]
+    },
+    {
+      "id": "E003",
+      "source": "J03",
+      "target": "J04",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 48.0,
+      "geometry": [
+        [
+          205,
+          790
+        ],
+        [
+          205,
+          730
+        ]
+      ]
+    },
+    {
+      "id": "E004",
+      "source": "J04",
+      "target": "J05",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          205,
+          730
+        ],
+        [
+          205,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "E005",
+      "source": "J05",
+      "target": "J06",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          205,
+          675
+        ],
+        [
+          205,
+          620
+        ]
+      ]
+    },
+    {
+      "id": "E006",
+      "source": "J06",
+      "target": "J07",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 36.0,
+      "geometry": [
+        [
+          205,
+          620
+        ],
+        [
+          205,
+          575
+        ]
+      ]
+    },
+    {
+      "id": "E007",
+      "source": "J07",
+      "target": "J08",
+      "road": "西园西侧路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 38.064226,
+      "geometry": [
+        [
+          205,
+          575
+        ],
+        [
+          180,
+          563
+        ],
+        [
+          165,
+          550
+        ]
+      ]
+    },
+    {
+      "id": "E008",
+      "source": "J08",
+      "target": "J09",
+      "road": "长城路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 64.52628,
+      "geometry": [
+        [
+          165,
+          550
+        ],
+        [
+          158,
+          510
+        ],
+        [
+          160,
+          470
+        ]
+      ]
+    },
+    {
+      "id": "E009",
+      "source": "J09",
+      "target": "J10",
+      "road": "西北环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 47.57142,
+      "geometry": [
+        [
+          160,
+          470
+        ],
+        [
+          170,
+          442
+        ],
+        [
+          190,
+          420
+        ]
+      ]
+    },
+    {
+      "id": "E010",
+      "source": "J10",
+      "target": "J11",
+      "road": "西北环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          190,
+          420
+        ],
+        [
+          245,
+          420
+        ]
+      ]
+    },
+    {
+      "id": "E011",
+      "source": "J11",
+      "target": "J12",
+      "road": "西北环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 56.568542,
+      "geometry": [
+        [
+          245,
+          420
+        ],
+        [
+          315,
+          430
+        ]
+      ]
+    },
+    {
+      "id": "E012",
+      "source": "J12",
+      "target": "J13",
+      "road": "西北环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 60.133186,
+      "geometry": [
+        [
+          315,
+          430
+        ],
+        [
+          390,
+          435
+        ]
+      ]
+    },
+    {
+      "id": "E013",
+      "source": "J13",
+      "target": "J14",
+      "road": "西北环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 48.166378,
+      "geometry": [
+        [
+          390,
+          435
+        ],
+        [
+          450,
+          440
+        ]
+      ]
+    },
+    {
+      "id": "E014",
+      "source": "J02",
+      "target": "J32",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          850
+        ],
+        [
+          285,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "E015",
+      "source": "J32",
+      "target": "J33",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 94.148818,
+      "geometry": [
+        [
+          285,
+          850
+        ],
+        [
+          400,
+          825
+        ]
+      ]
+    },
+    {
+      "id": "E016",
+      "source": "J33",
+      "target": "J27",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.72136,
+      "geometry": [
+        [
+          400,
+          825
+        ],
+        [
+          450,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "E017",
+      "source": "J03",
+      "target": "J34",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          790
+        ],
+        [
+          285,
+          790
+        ]
+      ]
+    },
+    {
+      "id": "E018",
+      "source": "J34",
+      "target": "J35",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 97.3242,
+      "geometry": [
+        [
+          285,
+          790
+        ],
+        [
+          405,
+          770
+        ]
+      ]
+    },
+    {
+      "id": "E019",
+      "source": "J35",
+      "target": "J36",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 52.153619,
+      "geometry": [
+        [
+          405,
+          770
+        ],
+        [
+          470,
+          765
+        ]
+      ]
+    },
+    {
+      "id": "E020",
+      "source": "J04",
+      "target": "J37",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          730
+        ],
+        [
+          285,
+          730
+        ]
+      ]
+    },
+    {
+      "id": "E021",
+      "source": "J37",
+      "target": "J38",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 96.747093,
+      "geometry": [
+        [
+          285,
+          730
+        ],
+        [
+          405,
+          715
+        ]
+      ]
+    },
+    {
+      "id": "E022",
+      "source": "J38",
+      "target": "J39",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 53.366656,
+      "geometry": [
+        [
+          405,
+          715
+        ],
+        [
+          470,
+          700
+        ]
+      ]
+    },
+    {
+      "id": "E023",
+      "source": "J05",
+      "target": "J40",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          675
+        ],
+        [
+          285,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "E024",
+      "source": "J40",
+      "target": "J41",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 100.0,
+      "geometry": [
+        [
+          285,
+          675
+        ],
+        [
+          410,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "E025",
+      "source": "J41",
+      "target": "J42",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 32.249031,
+      "geometry": [
+        [
+          410,
+          675
+        ],
+        [
+          450,
+          680
+        ]
+      ]
+    },
+    {
+      "id": "E026",
+      "source": "J06",
+      "target": "J43",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          620
+        ],
+        [
+          285,
+          620
+        ]
+      ]
+    },
+    {
+      "id": "E027",
+      "source": "J43",
+      "target": "J44",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 100.0,
+      "geometry": [
+        [
+          285,
+          620
+        ],
+        [
+          410,
+          620
+        ]
+      ]
+    },
+    {
+      "id": "E028",
+      "source": "J44",
+      "target": "J45",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 32.984845,
+      "geometry": [
+        [
+          410,
+          620
+        ],
+        [
+          450,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E029",
+      "source": "J07",
+      "target": "J46",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 64.0,
+      "geometry": [
+        [
+          205,
+          575
+        ],
+        [
+          285,
+          575
+        ]
+      ]
+    },
+    {
+      "id": "E030",
+      "source": "J46",
+      "target": "J47",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 96.0,
+      "geometry": [
+        [
+          285,
+          575
+        ],
+        [
+          405,
+          575
+        ]
+      ]
+    },
+    {
+      "id": "E031",
+      "source": "J47",
+      "target": "J48",
+      "road": "西园宿舍横向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 36.221541,
+      "geometry": [
+        [
+          405,
+          575
+        ],
+        [
+          450,
+          580
+        ]
+      ]
+    },
+    {
+      "id": "E032",
+      "source": "J32",
+      "target": "J34",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 48.0,
+      "geometry": [
+        [
+          285,
+          850
+        ],
+        [
+          285,
+          790
+        ]
+      ]
+    },
+    {
+      "id": "E033",
+      "source": "J34",
+      "target": "J37",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 48.0,
+      "geometry": [
+        [
+          285,
+          790
+        ],
+        [
+          285,
+          730
+        ]
+      ]
+    },
+    {
+      "id": "E034",
+      "source": "J37",
+      "target": "J40",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          285,
+          730
+        ],
+        [
+          285,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "E035",
+      "source": "J40",
+      "target": "J43",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          285,
+          675
+        ],
+        [
+          285,
+          620
+        ]
+      ]
+    },
+    {
+      "id": "E036",
+      "source": "J43",
+      "target": "J46",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 36.0,
+      "geometry": [
+        [
+          285,
+          620
+        ],
+        [
+          285,
+          575
+        ]
+      ]
+    },
+    {
+      "id": "E037",
+      "source": "J33",
+      "target": "J35",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.181444,
+      "geometry": [
+        [
+          400,
+          825
+        ],
+        [
+          405,
+          770
+        ]
+      ]
+    },
+    {
+      "id": "E038",
+      "source": "J35",
+      "target": "J38",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          405,
+          770
+        ],
+        [
+          405,
+          715
+        ]
+      ]
+    },
+    {
+      "id": "E039",
+      "source": "J38",
+      "target": "J41",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 32.249031,
+      "geometry": [
+        [
+          405,
+          715
+        ],
+        [
+          410,
+          675
+        ]
+      ]
+    },
+    {
+      "id": "E040",
+      "source": "J41",
+      "target": "J44",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 44.0,
+      "geometry": [
+        [
+          410,
+          675
+        ],
+        [
+          410,
+          620
+        ]
+      ]
+    },
+    {
+      "id": "E041",
+      "source": "J44",
+      "target": "J47",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 36.221541,
+      "geometry": [
+        [
+          410,
+          620
+        ],
+        [
+          405,
+          575
+        ]
+      ]
+    },
+    {
+      "id": "E042",
+      "source": "J27",
+      "target": "J36",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 69.856997,
+      "geometry": [
+        [
+          450,
+          850
+        ],
+        [
+          470,
+          765
+        ]
+      ]
+    },
+    {
+      "id": "E043",
+      "source": "J36",
+      "target": "J39",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 52.0,
+      "geometry": [
+        [
+          470,
+          765
+        ],
+        [
+          470,
+          700
+        ]
+      ]
+    },
+    {
+      "id": "E044",
+      "source": "J39",
+      "target": "J42",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 22.627417,
+      "geometry": [
+        [
+          470,
+          700
+        ],
+        [
+          450,
+          680
+        ]
+      ]
+    },
+    {
+      "id": "E045",
+      "source": "J42",
+      "target": "J45",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 40.0,
+      "geometry": [
+        [
+          450,
+          680
+        ],
+        [
+          450,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E046",
+      "source": "J45",
+      "target": "J48",
+      "road": "西园宿舍纵向路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 40.0,
+      "geometry": [
+        [
+          450,
+          630
+        ],
+        [
+          450,
+          580
+        ]
+      ]
+    },
+    {
+      "id": "E047",
+      "source": "J02",
+      "target": "J27",
+      "road": "江安大道南段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 196.16381,
+      "geometry": [
+        [
+          205,
+          850
+        ],
+        [
+          320,
+          845
+        ],
+        [
+          450,
+          850
+        ]
+      ]
+    },
+    {
+      "id": "E048",
+      "source": "J27",
+      "target": "J28",
+      "road": "江安大道南段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 131.050474,
+      "geometry": [
+        [
+          450,
+          850
+        ],
+        [
+          525,
+          832
+        ],
+        [
+          610,
+          815
+        ]
+      ]
+    },
+    {
+      "id": "E049",
+      "source": "J28",
+      "target": "J29",
+      "road": "江安大道南段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 124.210569,
+      "geometry": [
+        [
+          610,
+          815
+        ],
+        [
+          690,
+          795
+        ],
+        [
+          760,
+          775
+        ]
+      ]
+    },
+    {
+      "id": "E050",
+      "source": "J29",
+      "target": "J30",
+      "road": "江安大道南段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 116.481758,
+      "geometry": [
+        [
+          760,
+          775
+        ],
+        [
+          830,
+          755
+        ],
+        [
+          900,
+          735
+        ]
+      ]
+    },
+    {
+      "id": "E051",
+      "source": "J30",
+      "target": "J31",
+      "road": "江安大道南段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 115.177828,
+      "geometry": [
+        [
+          900,
+          735
+        ],
+        [
+          970,
+          710
+        ],
+        [
+          1035,
+          685
+        ]
+      ]
+    },
+    {
+      "id": "E052",
+      "source": "J31",
+      "target": "J24",
+      "road": "江安大道东段",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 146.515326,
+      "geometry": [
+        [
+          1035,
+          685
+        ],
+        [
+          1110,
+          635
+        ],
+        [
+          1185,
+          580
+        ]
+      ]
+    },
+    {
+      "id": "E053",
+      "source": "J24",
+      "target": "J25",
+      "road": "东实连接路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 71.888457,
+      "geometry": [
+        [
+          1185,
+          580
+        ],
+        [
+          1215,
+          610
+        ],
+        [
+          1230,
+          655
+        ]
+      ]
+    },
+    {
+      "id": "E054",
+      "source": "J25",
+      "target": "J26",
+      "road": "东实连接路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 65.96969,
+      "geometry": [
+        [
+          1230,
+          655
+        ],
+        [
+          1240,
+          695
+        ],
+        [
+          1250,
+          735
+        ]
+      ]
+    },
+    {
+      "id": "E055",
+      "source": "J14",
+      "target": "J15",
+      "road": "明远大道",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 55.81692,
+      "geometry": [
+        [
+          450,
+          440
+        ],
+        [
+          455,
+          410
+        ],
+        [
+          473,
+          375
+        ]
+      ]
+    },
+    {
+      "id": "E056",
+      "source": "J15",
+      "target": "J16",
+      "road": "明远大道",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 63.613406,
+      "geometry": [
+        [
+          473,
+          375
+        ],
+        [
+          500,
+          350
+        ],
+        [
+          540,
+          335
+        ]
+      ]
+    },
+    {
+      "id": "E057",
+      "source": "J16",
+      "target": "J17",
+      "road": "明远大道",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 73.099718,
+      "geometry": [
+        [
+          540,
+          335
+        ],
+        [
+          585,
+          325
+        ],
+        [
+          630,
+          320
+        ]
+      ]
+    },
+    {
+      "id": "E058",
+      "source": "J17",
+      "target": "J18",
+      "road": "明远大道",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 85.255174,
+      "geometry": [
+        [
+          630,
+          320
+        ],
+        [
+          680,
+          310
+        ],
+        [
+          735,
+          302
+        ]
+      ]
+    },
+    {
+      "id": "E059",
+      "source": "J18",
+      "target": "J19",
+      "road": "明远大道",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 85.98569,
+      "geometry": [
+        [
+          735,
+          302
+        ],
+        [
+          790,
+          295
+        ],
+        [
+          842,
+          297
+        ]
+      ]
+    },
+    {
+      "id": "E060",
+      "source": "J19",
+      "target": "J20",
+      "road": "中央教学区主路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 74.198967,
+      "geometry": [
+        [
+          842,
+          297
+        ],
+        [
+          870,
+          325
+        ],
+        [
+          910,
+          360
+        ]
+      ]
+    },
+    {
+      "id": "E061",
+      "source": "J20",
+      "target": "J21",
+      "road": "中央教学区主路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 73.756356,
+      "geometry": [
+        [
+          910,
+          360
+        ],
+        [
+          945,
+          390
+        ],
+        [
+          980,
+          420
+        ]
+      ]
+    },
+    {
+      "id": "E062",
+      "source": "J21",
+      "target": "J22",
+      "road": "中央教学区主路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 70.819303,
+      "geometry": [
+        [
+          980,
+          420
+        ],
+        [
+          1010,
+          450
+        ],
+        [
+          1045,
+          480
+        ]
+      ]
+    },
+    {
+      "id": "E063",
+      "source": "J22",
+      "target": "J23",
+      "road": "中央教学区主路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 67.882251,
+      "geometry": [
+        [
+          1045,
+          480
+        ],
+        [
+          1075,
+          510
+        ],
+        [
+          1105,
+          540
+        ]
+      ]
+    },
+    {
+      "id": "E064",
+      "source": "J23",
+      "target": "J24",
+      "road": "中央教学区主路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 71.554175,
+      "geometry": [
+        [
+          1105,
+          540
+        ],
+        [
+          1145,
+          560
+        ],
+        [
+          1185,
+          580
+        ]
+      ]
+    },
+    {
+      "id": "E065",
+      "source": "J45",
+      "target": "J49",
+      "road": "明远湖长桥",
+      "kind": "bridge",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 129.014672,
+      "geometry": [
+        [
+          450,
+          630
+        ],
+        [
+          525,
+          638
+        ],
+        [
+          610,
+          650
+        ]
+      ]
+    },
+    {
+      "id": "E066",
+      "source": "J49",
+      "target": "J50",
+      "road": "实践楼北路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 65.233876,
+      "geometry": [
+        [
+          610,
+          650
+        ],
+        [
+          650,
+          645
+        ],
+        [
+          690,
+          635
+        ]
+      ]
+    },
+    {
+      "id": "E067",
+      "source": "J50",
+      "target": "J51",
+      "road": "实践楼北路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 81.02865,
+      "geometry": [
+        [
+          690,
+          635
+        ],
+        [
+          735,
+          620
+        ],
+        [
+          785,
+          600
+        ]
+      ]
+    },
+    {
+      "id": "E068",
+      "source": "J51",
+      "target": "J52",
+      "road": "中央广场西路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 59.116691,
+      "geometry": [
+        [
+          785,
+          600
+        ],
+        [
+          802,
+          565
+        ],
+        [
+          820,
+          535
+        ]
+      ]
+    },
+    {
+      "id": "E069",
+      "source": "J52",
+      "target": "J53",
+      "road": "教学区中路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 52.445313,
+      "geometry": [
+        [
+          820,
+          535
+        ],
+        [
+          845,
+          515
+        ],
+        [
+          875,
+          500
+        ]
+      ]
+    },
+    {
+      "id": "E070",
+      "source": "J53",
+      "target": "J54",
+      "road": "教学区中路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 87.830136,
+      "geometry": [
+        [
+          875,
+          500
+        ],
+        [
+          920,
+          475
+        ],
+        [
+          970,
+          445
+        ]
+      ]
+    },
+    {
+      "id": "E071",
+      "source": "J54",
+      "target": "J55",
+      "road": "教学区中路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 84.449136,
+      "geometry": [
+        [
+          970,
+          445
+        ],
+        [
+          1015,
+          415
+        ],
+        [
+          1060,
+          390
+        ]
+      ]
+    },
+    {
+      "id": "E072",
+      "source": "J55",
+      "target": "J56",
+      "road": "体育馆北路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 85.041167,
+      "geometry": [
+        [
+          1060,
+          390
+        ],
+        [
+          1100,
+          355
+        ],
+        [
+          1140,
+          320
+        ]
+      ]
+    },
+    {
+      "id": "E073",
+      "source": "J28",
+      "target": "J57",
+      "road": "南桥西接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 92.037543,
+      "geometry": [
+        [
+          610,
+          815
+        ],
+        [
+          615,
+          775
+        ],
+        [
+          630,
+          735
+        ],
+        [
+          650,
+          710
+        ]
+      ]
+    },
+    {
+      "id": "E074",
+      "source": "J57",
+      "target": "J58",
+      "road": "南桥",
+      "kind": "bridge",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 108.85257,
+      "geometry": [
+        [
+          650,
+          710
+        ],
+        [
+          705,
+          695
+        ],
+        [
+          780,
+          670
+        ]
+      ]
+    },
+    {
+      "id": "E075",
+      "source": "J58",
+      "target": "J59",
+      "road": "教学区南路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 86.162637,
+      "geometry": [
+        [
+          780,
+          670
+        ],
+        [
+          830,
+          650
+        ],
+        [
+          880,
+          630
+        ]
+      ]
+    },
+    {
+      "id": "E076",
+      "source": "J59",
+      "target": "J60",
+      "road": "教学区南路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 87.729882,
+      "geometry": [
+        [
+          880,
+          630
+        ],
+        [
+          930,
+          607
+        ],
+        [
+          980,
+          585
+        ]
+      ]
+    },
+    {
+      "id": "E077",
+      "source": "J60",
+      "target": "J61",
+      "road": "教学区南路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 94.979799,
+      "geometry": [
+        [
+          980,
+          585
+        ],
+        [
+          1030,
+          555
+        ],
+        [
+          1085,
+          530
+        ]
+      ]
+    },
+    {
+      "id": "E078",
+      "source": "J61",
+      "target": "J23",
+      "road": "体育区南接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 17.888544,
+      "geometry": [
+        [
+          1085,
+          530
+        ],
+        [
+          1095,
+          535
+        ],
+        [
+          1105,
+          540
+        ]
+      ]
+    },
+    {
+      "id": "E079",
+      "source": "J51",
+      "target": "J58",
+      "road": "中央广场纵路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 57.404711,
+      "geometry": [
+        [
+          785,
+          600
+        ],
+        [
+          790,
+          635
+        ],
+        [
+          780,
+          670
+        ]
+      ]
+    },
+    {
+      "id": "E080",
+      "source": "J55",
+      "target": "J61",
+      "road": "体育区西路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 113.80002,
+      "geometry": [
+        [
+          1060,
+          390
+        ],
+        [
+          1070,
+          455
+        ],
+        [
+          1085,
+          530
+        ]
+      ]
+    },
+    {
+      "id": "E081",
+      "source": "J58",
+      "target": "J29",
+      "road": "南门西接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 85.513516,
+      "geometry": [
+        [
+          780,
+          670
+        ],
+        [
+          770,
+          720
+        ],
+        [
+          760,
+          775
+        ]
+      ]
+    },
+    {
+      "id": "E082",
+      "source": "J59",
+      "target": "J30",
+      "road": "南门中央接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 85.513516,
+      "geometry": [
+        [
+          880,
+          630
+        ],
+        [
+          890,
+          680
+        ],
+        [
+          900,
+          735
+        ]
+      ]
+    },
+    {
+      "id": "E083",
+      "source": "J60",
+      "target": "J31",
+      "road": "南门东接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 91.368975,
+      "geometry": [
+        [
+          980,
+          585
+        ],
+        [
+          1005,
+          635
+        ],
+        [
+          1035,
+          685
+        ]
+      ]
+    },
+    {
+      "id": "E084",
+      "source": "J21",
+      "target": "J54",
+      "road": "文科区接入路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 21.540659,
+      "geometry": [
+        [
+          980,
+          420
+        ],
+        [
+          970,
+          445
+        ]
+      ]
+    },
+    {
+      "id": "E085",
+      "source": "J21",
+      "target": "J55",
+      "road": "体育馆北接入路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 68.361282,
+      "geometry": [
+        [
+          980,
+          420
+        ],
+        [
+          1018,
+          405
+        ],
+        [
+          1060,
+          390
+        ]
+      ]
+    },
+    {
+      "id": "E086",
+      "source": "J22",
+      "target": "J61",
+      "road": "体育区接入路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 51.224994,
+      "geometry": [
+        [
+          1045,
+          480
+        ],
+        [
+          1085,
+          530
+        ]
+      ]
+    },
+    {
+      "id": "E087",
+      "source": "J62",
+      "target": "J63",
+      "road": "东园西纵路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 53.45149,
+      "geometry": [
+        [
+          785,
+          85
+        ],
+        [
+          780,
+          115
+        ],
+        [
+          790,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "E088",
+      "source": "J63",
+      "target": "J64",
+      "road": "东园西纵路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 61.369471,
+      "geometry": [
+        [
+          790,
+          150
+        ],
+        [
+          800,
+          185
+        ],
+        [
+          820,
+          220
+        ]
+      ]
+    },
+    {
+      "id": "E089",
+      "source": "J64",
+      "target": "J65",
+      "road": "东园西纵路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 52.005243,
+      "geometry": [
+        [
+          820,
+          220
+        ],
+        [
+          833,
+          250
+        ],
+        [
+          845,
+          280
+        ]
+      ]
+    },
+    {
+      "id": "E090",
+      "source": "J65",
+      "target": "J19",
+      "road": "东园南接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 13.810141,
+      "geometry": [
+        [
+          845,
+          280
+        ],
+        [
+          842,
+          297
+        ]
+      ]
+    },
+    {
+      "id": "E091",
+      "source": "J63",
+      "target": "J66",
+      "road": "东园北路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 98.45204,
+      "geometry": [
+        [
+          790,
+          150
+        ],
+        [
+          845,
+          175
+        ],
+        [
+          900,
+          205
+        ]
+      ]
+    },
+    {
+      "id": "E092",
+      "source": "J66",
+      "target": "J67",
+      "road": "东园北路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 46.838881,
+      "geometry": [
+        [
+          900,
+          205
+        ],
+        [
+          930,
+          195
+        ],
+        [
+          955,
+          185
+        ]
+      ]
+    },
+    {
+      "id": "E093",
+      "source": "J67",
+      "target": "J68",
+      "road": "东园东纵路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 74.409301,
+      "geometry": [
+        [
+          955,
+          185
+        ],
+        [
+          980,
+          220
+        ],
+        [
+          1010,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E094",
+      "source": "J68",
+      "target": "J69",
+      "road": "东园南路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 72.997416,
+      "geometry": [
+        [
+          1010,
+          260
+        ],
+        [
+          1055,
+          268
+        ],
+        [
+          1100,
+          275
+        ]
+      ]
+    },
+    {
+      "id": "E095",
+      "source": "J69",
+      "target": "J70",
+      "road": "东校门路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 84.263839,
+      "geometry": [
+        [
+          1100,
+          275
+        ],
+        [
+          1145,
+          250
+        ],
+        [
+          1195,
+          230
+        ]
+      ]
+    },
+    {
+      "id": "E096",
+      "source": "J65",
+      "target": "J68",
+      "road": "东园中路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 132.967033,
+      "geometry": [
+        [
+          845,
+          280
+        ],
+        [
+          925,
+          270
+        ],
+        [
+          1010,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E097",
+      "source": "J68",
+      "target": "J20",
+      "road": "文科楼西接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 113.137085,
+      "geometry": [
+        [
+          1010,
+          260
+        ],
+        [
+          965,
+          305
+        ],
+        [
+          910,
+          360
+        ]
+      ]
+    },
+    {
+      "id": "E098",
+      "source": "J69",
+      "target": "J56",
+      "road": "体育区北接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 48.169311,
+      "geometry": [
+        [
+          1100,
+          275
+        ],
+        [
+          1120,
+          297
+        ],
+        [
+          1140,
+          320
+        ]
+      ]
+    },
+    {
+      "id": "E099",
+      "source": "J70",
+      "target": "J24",
+      "road": "东侧外环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 453.932243,
+      "geometry": [
+        [
+          1195,
+          230
+        ],
+        [
+          1280,
+          285
+        ],
+        [
+          1360,
+          350
+        ],
+        [
+          1400,
+          430
+        ],
+        [
+          1360,
+          500
+        ],
+        [
+          1280,
+          545
+        ],
+        [
+          1185,
+          580
+        ]
+      ]
+    },
+    {
+      "id": "E100",
+      "source": "J74",
+      "target": "J75",
+      "road": "未来研究院东路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 72.071076,
+      "geometry": [
+        [
+          390,
+          170
+        ],
+        [
+          392,
+          215
+        ],
+        [
+          390,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E101",
+      "source": "J75",
+      "target": "J14",
+      "road": "安宁河北岸路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 156.832385,
+      "geometry": [
+        [
+          390,
+          260
+        ],
+        [
+          420,
+          300
+        ],
+        [
+          445,
+          350
+        ],
+        [
+          450,
+          440
+        ]
+      ]
+    },
+    {
+      "id": "E102",
+      "source": "J72",
+      "target": "J76",
+      "road": "交叉学科西路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 102.738066,
+      "geometry": [
+        [
+          185,
+          150
+        ],
+        [
+          210,
+          205
+        ],
+        [
+          250,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E103",
+      "source": "J73",
+      "target": "J76",
+      "road": "交叉学科中路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 94.605385,
+      "geometry": [
+        [
+          285,
+          155
+        ],
+        [
+          290,
+          205
+        ],
+        [
+          250,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E104",
+      "source": "J76",
+      "target": "J75",
+      "road": "交叉学科南路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 112.285351,
+      "geometry": [
+        [
+          250,
+          260
+        ],
+        [
+          320,
+          265
+        ],
+        [
+          390,
+          260
+        ]
+      ]
+    },
+    {
+      "id": "E105",
+      "source": "J76",
+      "target": "J77",
+      "road": "新能源研究路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 91.238494,
+      "geometry": [
+        [
+          250,
+          260
+        ],
+        [
+          190,
+          275
+        ],
+        [
+          140,
+          290
+        ]
+      ]
+    },
+    {
+      "id": "E106",
+      "source": "J71",
+      "target": "J77",
+      "road": "西北区外环路",
+      "kind": "road",
+      "oneway": false,
+      "width": "wide",
+      "walkable": true,
+      "distance_m_est_curved": 143.542218,
+      "geometry": [
+        [
+          75,
+          155
+        ],
+        [
+          70,
+          220
+        ],
+        [
+          90,
+          280
+        ],
+        [
+          140,
+          290
+        ]
+      ]
+    },
+    {
+      "id": "E107",
+      "source": "J77",
+      "target": "J09",
+      "road": "西北区南接入",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 145.104176,
+      "geometry": [
+        [
+          140,
+          290
+        ],
+        [
+          145,
+          380
+        ],
+        [
+          160,
+          470
+        ]
+      ]
+    },
+    {
+      "id": "E108",
+      "source": "J52",
+      "target": "P01",
+      "road": "明远湖东入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 16.970563,
+      "geometry": [
+        [
+          820,
+          535
+        ],
+        [
+          805,
+          520
+        ]
+      ]
+    },
+    {
+      "id": "E109",
+      "source": "J53",
+      "target": "P02",
+      "road": "综合楼入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 22.627417,
+      "geometry": [
+        [
+          875,
+          500
+        ],
+        [
+          895,
+          520
+        ]
+      ]
+    },
+    {
+      "id": "E110",
+      "source": "J63",
+      "target": "P03",
+      "road": "教职工楼入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 16.970563,
+      "geometry": [
+        [
+          790,
+          150
+        ],
+        [
+          805,
+          135
+        ]
+      ]
+    },
+    {
+      "id": "E111",
+      "source": "J66",
+      "target": "P04",
+      "road": "东园一二舍入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 14.422205,
+      "geometry": [
+        [
+          900,
+          205
+        ],
+        [
+          910,
+          220
+        ]
+      ]
+    },
+    {
+      "id": "E112",
+      "source": "J66",
+      "target": "P05",
+      "road": "东园食堂入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 20.396078,
+      "geometry": [
+        [
+          900,
+          205
+        ],
+        [
+          925,
+          210
+        ]
+      ]
+    },
+    {
+      "id": "E113",
+      "source": "J70",
+      "target": "P06",
+      "road": "留学生公寓入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 26.832816,
+      "geometry": [
+        [
+          1195,
+          230
+        ],
+        [
+          1165,
+          245
+        ]
+      ]
+    },
+    {
+      "id": "E114",
+      "source": "J70",
+      "target": "P07",
+      "road": "灾后重建学院入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 37.947332,
+      "geometry": [
+        [
+          1195,
+          230
+        ],
+        [
+          1240,
+          245
+        ]
+      ]
+    },
+    {
+      "id": "E115",
+      "source": "J26",
+      "target": "P08",
+      "road": "东实食堂入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 26.832816,
+      "geometry": [
+        [
+          1250,
+          735
+        ],
+        [
+          1280,
+          720
+        ]
+      ]
+    },
+    {
+      "id": "E116",
+      "source": "J73",
+      "target": "P09",
+      "road": "重点实验基地入口路",
+      "kind": "road",
+      "oneway": false,
+      "width": "normal",
+      "walkable": true,
+      "distance_m_est_curved": 20.0,
+      "geometry": [
+        [
+          285,
+          155
+        ],
+        [
+          270,
+          175
+        ]
+      ]
+    }
+  ],
+  "pois": [
+    {
+      "id": "POI01",
+      "name": "明远湖",
+      "x": 625,
+      "y": 450,
+      "category": "lake",
+      "nearest_node": "P01"
+    },
+    {
+      "id": "POI02",
+      "name": "行政楼",
+      "x": 800,
+      "y": 335,
+      "category": "service",
+      "nearest_node": "J19"
+    },
+    {
+      "id": "POI03",
+      "name": "图书馆",
+      "x": 735,
+      "y": 385,
+      "category": "teaching",
+      "nearest_node": "J18"
+    },
+    {
+      "id": "POI04",
+      "name": "学术交流中心",
+      "x": 735,
+      "y": 535,
+      "category": "service",
+      "nearest_node": "J52"
+    },
+    {
+      "id": "POI05",
+      "name": "第一教学楼",
+      "x": 935,
+      "y": 515,
+      "category": "teaching",
+      "nearest_node": "J53"
+    },
+    {
+      "id": "POI06",
+      "name": "第二教学楼",
+      "x": 1015,
+      "y": 585,
+      "category": "teaching",
+      "nearest_node": "J60"
+    },
+    {
+      "id": "POI07",
+      "name": "实践楼",
+      "x": 735,
+      "y": 635,
+      "category": "teaching",
+      "nearest_node": "J50"
+    },
+    {
+      "id": "POI08",
+      "name": "礼仪堂",
+      "x": 925,
+      "y": 660,
+      "category": "service",
+      "nearest_node": "J59"
+    },
+    {
+      "id": "POI09",
+      "name": "南门",
+      "x": 870,
+      "y": 760,
+      "category": "gate",
+      "nearest_node": "J30"
+    },
+    {
+      "id": "POI10",
+      "name": "体育馆",
+      "x": 1100,
+      "y": 425,
+      "category": "sports",
+      "nearest_node": "J55"
+    },
+    {
+      "id": "POI11",
+      "name": "体育运动场",
+      "x": 1230,
+      "y": 450,
+      "category": "sports",
+      "nearest_node": "J23"
+    },
+    {
+      "id": "POI12",
+      "name": "游泳馆",
+      "x": 1145,
+      "y": 365,
+      "category": "sports",
+      "nearest_node": "J56"
+    },
+    {
+      "id": "POI13",
+      "name": "江安校区图书馆与博物馆",
+      "x": 1165,
+      "y": 525,
+      "category": "teaching",
+      "nearest_node": "J24"
+    },
+    {
+      "id": "POI14",
+      "name": "文科楼",
+      "x": 1020,
+      "y": 315,
+      "category": "teaching",
+      "nearest_node": "J68"
+    },
+    {
+      "id": "POI15",
+      "name": "学术文化交流中心",
+      "x": 1180,
+      "y": 320,
+      "category": "service",
+      "nearest_node": "J69"
+    },
+    {
+      "id": "POI16",
+      "name": "东园一舍与二舍",
+      "x": 915,
+      "y": 255,
+      "category": "dormitory",
+      "nearest_node": "P04"
+    },
+    {
+      "id": "POI17",
+      "name": "东园六舍",
+      "x": 830,
+      "y": 165,
+      "category": "dormitory",
+      "nearest_node": "J63"
+    },
+    {
+      "id": "POI18",
+      "name": "东园七舍",
+      "x": 900,
+      "y": 185,
+      "category": "dormitory",
+      "nearest_node": "J66"
+    },
+    {
+      "id": "POI19",
+      "name": "东园八舍",
+      "x": 980,
+      "y": 165,
+      "category": "dormitory",
+      "nearest_node": "J67"
+    },
+    {
+      "id": "POI20",
+      "name": "东园留学生公寓与教师公寓",
+      "x": 1100,
+      "y": 190,
+      "category": "dormitory",
+      "nearest_node": "P06"
+    },
+    {
+      "id": "POI21",
+      "name": "教职工楼",
+      "x": 835,
+      "y": 105,
+      "category": "dormitory",
+      "nearest_node": "P03"
+    },
+    {
+      "id": "POI22",
+      "name": "灾后重建与管理学院",
+      "x": 1300,
+      "y": 245,
+      "category": "teaching",
+      "nearest_node": "P07"
+    },
+    {
+      "id": "POI23",
+      "name": "建筑与环境学院楼",
+      "x": 1320,
+      "y": 245,
+      "category": "teaching",
+      "nearest_node": "J70"
+    },
+    {
+      "id": "POI24",
+      "name": "工程训练中心",
+      "x": 1320,
+      "y": 620,
+      "category": "teaching",
+      "nearest_node": "J25"
+    },
+    {
+      "id": "POI25",
+      "name": "创新创业产业园",
+      "x": 1340,
+      "y": 700,
+      "category": "service",
+      "nearest_node": "J26"
+    },
+    {
+      "id": "POI26",
+      "name": "东实学生食堂",
+      "x": 1370,
+      "y": 745,
+      "category": "canteen",
+      "nearest_node": "P08"
+    },
+    {
+      "id": "POI27",
+      "name": "西园宿舍区",
+      "x": 250,
+      "y": 730,
+      "category": "dormitory",
+      "nearest_node": "J37"
+    },
+    {
+      "id": "POI28",
+      "name": "西园食堂",
+      "x": 380,
+      "y": 660,
+      "category": "canteen",
+      "nearest_node": "J41"
+    },
+    {
+      "id": "POI29",
+      "name": "学生服务中心",
+      "x": 470,
+      "y": 550,
+      "category": "service",
+      "nearest_node": "J48"
+    },
+    {
+      "id": "POI30",
+      "name": "西南门",
+      "x": 200,
+      "y": 905,
+      "category": "gate",
+      "nearest_node": "J01"
+    },
+    {
+      "id": "POI31",
+      "name": "西区体育场",
+      "x": 550,
+      "y": 740,
+      "category": "sports",
+      "nearest_node": "J57"
+    },
+    {
+      "id": "POI32",
+      "name": "多学科交叉楼",
+      "x": 320,
+      "y": 150,
+      "category": "teaching",
+      "nearest_node": "J73"
+    },
+    {
+      "id": "POI33",
+      "name": "国家重点工程研究实验基地",
+      "x": 260,
+      "y": 190,
+      "category": "teaching",
+      "nearest_node": "P09"
+    },
+    {
+      "id": "POI34",
+      "name": "计算理论与未来研究院",
+      "x": 375,
+      "y": 195,
+      "category": "teaching",
+      "nearest_node": "J74"
+    },
+    {
+      "id": "POI35",
+      "name": "多学科交叉研究机构大楼",
+      "x": 225,
+      "y": 235,
+      "category": "teaching",
+      "nearest_node": "J76"
+    },
+    {
+      "id": "POI36",
+      "name": "江安新能源研究院",
+      "x": 220,
+      "y": 300,
+      "category": "teaching",
+      "nearest_node": "J77"
+    },
+    {
+      "id": "POI37",
+      "name": "东园食堂",
+      "x": 935,
+      "y": 225,
+      "category": "canteen",
+      "nearest_node": "P05"
+    },
+    {
+      "id": "POI38",
+      "name": "综合楼与一基楼",
+      "x": 950,
+      "y": 535,
+      "category": "teaching",
+      "nearest_node": "P02"
+    }
+  ]
+}
